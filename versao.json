@@ -1,15 +1,20 @@
 {
-  "versao": "2026.10.18.1",
+  "versao": "2026.10.18.2",
   "data": "2026-10-18",
-  "novidades": "Primeira versão do app: tela cheia e funciona sem internet.",
-  "conteudo": "66f039b80fbd0cc3",
-  "arquivos": 93,
-  "bytes": 20827522,
+  "novidades": "Novo evento: Academia dos Números! Contar até 10 com a Capitã Estrela e salvar as crianças da Bruxa.",
+  "conteudo": "c1c673c923c923eb",
+  "arquivos": 104,
+  "bytes": 25074841,
   "historico": [
     {
       "versao": "2026.10.18.1",
       "data": "2026-10-18",
       "novidades": "Primeira versão do app: tela cheia e funciona sem internet."
+    },
+    {
+      "versao": "2026.10.18.2",
+      "data": "2026-10-18",
+      "novidades": "Novo evento: Academia dos Números! Contar até 10 com a Capitã Estrela e salvar as crianças da Bruxa."
     }
   ]
 }

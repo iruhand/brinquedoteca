@@ -19,7 +19,7 @@
 <link rel="stylesheet" href="fontes/fontes.css">
 <title>Brinquedoteca do Papai</title>
 <style>:root{color-scheme:light;box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
-<script>window.BRINQUEDOTECA_APP = {"versao": "2026.10.18.1", "data": "2026-10-18", "novidades": "Primeira versão do app: tela cheia e funciona sem internet.", "linkClaude": "https://claude.ai/artifact/1yEmnxzDW3Kac88G623zZQ"};</script>
+<script>window.BRINQUEDOTECA_APP = {"versao": "2026.10.18.2", "data": "2026-10-18", "novidades": "Novo evento: Academia dos Números! Contar até 10 com a Capitã Estrela e salvar as crianças da Bruxa.", "linkClaude": "https://claude.ai/artifact/1yEmnxzDW3Kac88G623zZQ"};</script>
 <style>
 /* ===== App instalado: margens do entalhe da câmera, aviso de versão nova e ⚙️ Ajustes ===== */
 #app { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
@@ -967,6 +967,291 @@ img, svg { -webkit-user-drag: none; }
 }
 /* celular deitado: nas casas das heroínas, os créditos dos rostos saem de cima da cena (continuam no fim da tela inicial) */
 @media (max-height: 520px) { #mundo #tela-bicho.heroinas .creditos-heroinas { display: none; } }
+/* ===== Evento (aba temporária): cartão na tela inicial, mapa de níveis e fases, fim de fase e quadrinhos ===== */
+/* cartão na tela inicial: estilo gibi (contorno grosso, retícula de pontinhos, sombra deslocada) */
+.eventos { width: 100%; max-width: 1120px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.evento-cartao {
+  --tinta-hq: #1d2433;
+  position: relative; display: flex; align-items: center; gap: clamp(12px, 2vw, 24px); width: 100%; max-width: 780px; padding: 10px 14px 10px 10px; box-sizing: border-box;
+  border: 4px solid var(--tinta-hq); border-radius: 22px; color: var(--tinta); cursor: pointer; text-align: left; font-family: var(--f-texto);
+  background: radial-gradient(circle, rgba(29, 36, 51, .1) 0 1.6px, transparent 2px) 0 0 / 11px 11px, linear-gradient(180deg, #fff7d1, #ffe58a);
+  box-shadow: 7px 7px 0 var(--tinta-hq), 0 16px 26px rgba(43, 58, 85, .18); transform: rotate(-.6deg); transition: transform .15s;
+}
+.evento-cartao:hover { transform: rotate(-.6deg) translateY(-3px); }
+.evento-cartao:active { transform: rotate(-.6deg) translateY(3px); box-shadow: 3px 3px 0 var(--tinta-hq); }
+.evento-capa { flex: 0 0 min(42%, 290px); line-height: 0; }
+.evento-capa > svg { width: 100%; height: auto; border: 3px solid var(--tinta-hq); border-radius: 14px; box-sizing: border-box; }
+.evento-txt { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; min-width: 0; }
+.evento-selo {
+  font: 800 13px/1 var(--f-titulo); letter-spacing: .08em; text-transform: uppercase; color: #fff; padding: 6px 10px 5px;
+  background: #e63946; border: 2.5px solid var(--tinta-hq); border-radius: 8px; transform: rotate(-3deg); box-shadow: 3px 3px 0 var(--tinta-hq);
+}
+.evento-nome { --apoio: .7em; font: 800 clamp(24px, 3.4vw, 38px)/1.05 var(--f-titulo); text-wrap: balance; }
+.evento-sobre { --apoio: .9em; font-size: clamp(14px, 1.5vw, 17px); font-weight: 700; text-wrap: balance; }
+.evento-progresso { font-size: 13px; font-weight: 800; opacity: .75; }
+@media (max-width: 560px) {
+  .evento-cartao { flex-direction: column; align-items: stretch; text-align: center; }
+  .evento-capa { flex-basis: auto; }
+  .evento-txt { align-items: center; }
+}
+
+/* mapa: a torre, um andar por nível (o primeiro embaixo), uma pedra por fase */
+.evento-mapa { gap: clamp(10px, 2vh, 18px); }
+.ev-lado { display: flex; flex-direction: column; align-items: center; gap: clamp(10px, 2vh, 18px); }
+.evento-mapa .ev-continuar { max-width: min(100%, 720px); }
+/* tela larga: a Capitã e o botão à esquerda (sempre à vista), a torre à direita */
+@media (min-width: 980px) {
+  .tela.evento-mapa { display: grid; grid-template-columns: minmax(280px, 1fr) minmax(0, 720px); align-items: start; column-gap: 28px; max-width: 1180px; margin-inline: auto; }
+  .evento-mapa .ev-lado { position: sticky; top: 8px; grid-row: span 2; }
+  .evento-mapa .ev-lado .fala { flex-direction: column; }
+  .evento-mapa .ev-lado .pergunta { font-size: clamp(28px, 3vw, 44px); }
+  .evento-mapa .ev-pai { grid-column: 2; }
+}
+.ev-torre {
+  width: 100%; max-width: 760px; display: flex; flex-direction: column; gap: 10px; padding: 12px; box-sizing: border-box; border-radius: 26px 26px 14px 14px;
+  background:
+    repeating-linear-gradient(0deg, rgba(74, 58, 122, .18) 0 2px, transparent 2px 34px),
+    repeating-linear-gradient(90deg, rgba(74, 58, 122, .12) 0 2px, transparent 2px 58px),
+    var(--grao), linear-gradient(180deg, #d9cff0, #b9a9e0);
+  border: 4px solid #4a3a7a; box-shadow: 6px 6px 0 rgba(29, 36, 51, .55), var(--sombra-suave);
+}
+.ev-topo { line-height: 0; }
+.ev-topo > svg { width: 100%; height: auto; max-height: 90px; }
+.ev-andar {
+  display: flex; align-items: center; gap: clamp(8px, 1.6vw, 16px); padding: 8px 10px; border-radius: 20px;
+  background: var(--grao), linear-gradient(180deg, #ffffff, var(--papel) 60%, var(--papel-fundo));
+  border: 3px solid color-mix(in srgb, var(--cor-nivel) 70%, #1d2433); box-shadow: 0 5px 0 rgba(43, 58, 85, .18);
+}
+.ev-andar.trancado { filter: saturate(.35); opacity: .78; }
+.ev-andar.vencido { background: var(--grao), linear-gradient(180deg, #f2fff0, #d7f5d1); }
+.ev-retrato { flex: none; width: clamp(64px, 11vw, 92px); aspect-ratio: 1; padding: 0; border: 0; background: none; border-radius: 50%; cursor: pointer; line-height: 0; }
+.ev-retrato > svg { width: 100%; height: 100%; filter: drop-shadow(0 4px 3px rgba(43, 58, 85, .25)); }
+.ev-andar-info { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; min-width: 0; flex: 1; }
+.ev-andar-nome { font: 800 clamp(18px, 2.4vw, 24px)/1 var(--f-titulo); }
+.ev-vencido { color: var(--certo); }
+.ev-pedras { display: flex; flex-wrap: wrap; gap: clamp(5px, 1vw, 9px); }
+.ev-pedra {
+  position: relative; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; width: clamp(44px, 7vw, 60px); aspect-ratio: 1;
+  padding: 0; border: 3px solid #8d7bb8; border-radius: 50%; cursor: pointer; color: var(--tinta);
+  background: var(--grao), radial-gradient(circle at 35% 30%, #ffffff, #e9e3f7 70%); box-shadow: 0 4px 0 rgba(43, 58, 85, .2);
+}
+.ev-pedra-ic { font: clamp(18px, 3vw, 26px)/1 var(--f-emoji); }
+.ev-pedra-n { position: absolute; left: -4px; bottom: -4px; min-width: 1.5em; height: 1.5em; border-radius: 999px; background: #4a3a7a; color: #fff; font: 800 11px/1.5em var(--f-titulo); }
+.ev-pedra-estrela { position: absolute; right: -8px; top: -9px; font: 18px/1 var(--f-emoji); filter: drop-shadow(0 2px 1px rgba(43, 58, 85, .3)); }
+.ev-pedra.feita { border-color: var(--certo); background: var(--grao), radial-gradient(circle at 35% 30%, #ffffff, #c9f0cf 70%); }
+.ev-pedra.atual { border-color: var(--sol-borda); background: var(--grao), radial-gradient(circle at 35% 30%, #fffbe0, var(--sol) 80%); box-shadow: 0 4px 0 var(--sol-borda), 0 0 0 6px rgba(255, 201, 60, .55); animation: brilha 1.1s ease-in-out infinite; }
+.ev-pedra.trancada { opacity: .55; cursor: default; }
+.ev-pedra.abriu { animation: pula .7s 2; }
+.treme { animation: treme .35s 2; }
+.ev-pai { display: flex; flex-direction: column; align-items: center; gap: 8px; max-width: 760px; }
+.ev-pai-botoes { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+
+/* fim de fase */
+.ev-fim-estrela { font: clamp(80px, 14vw, 150px)/1 var(--f-emoji); animation: surge .5s both, flutua 3s ease-in-out .5s infinite; filter: drop-shadow(0 10px 8px rgba(43, 58, 85, .25)); }
+
+/* quadrinhos: um quadro por vez, legenda amarela em cima, balões por cima do desenho e a onomatopeia */
+.ev-hq { gap: clamp(8px, 1.6vh, 16px); }
+.hq-pagina { width: min(100%, 860px); }
+.hq-quadro {
+  --tinta-hq: #1d2433;
+  margin: 0; position: relative; overflow: hidden; background: #fff; border: 5px solid var(--tinta-hq); border-radius: 8px;
+  box-shadow: 8px 8px 0 var(--tinta-hq); transform: rotate(var(--giro, 0deg)); animation: hq-entra .45s cubic-bezier(.2, 1.4, .4, 1) both;
+}
+@keyframes hq-entra { from { transform: rotate(var(--giro, 0deg)) translateX(40px) scale(.92); opacity: 0; } }
+.hq-legenda {
+  --apoio: .78em; position: relative; z-index: 2; margin: 0; padding: 8px 14px; text-align: left; cursor: pointer;
+  font: 800 clamp(16px, 2.4vw, 24px)/1.2 var(--f-titulo); color: var(--tinta-hq);
+  background: radial-gradient(circle, rgba(29, 36, 51, .08) 0 1.4px, transparent 1.8px) 0 0 / 9px 9px, #ffe680; border-bottom: 4px solid var(--tinta-hq);
+}
+.hq-legenda .bi.duplo { align-items: flex-start; }
+.hq-cena { position: relative; container-type: inline-size; line-height: 0; }
+.hq-cena > svg { display: block; width: 100%; height: auto; aspect-ratio: 400 / 250; }
+.hq-balao {
+  --apoio: .8em; position: absolute; z-index: 2; margin: 0; padding: .45em .7em; box-sizing: border-box; cursor: pointer; text-align: center;
+  font: 800 max(13px, 3.3cqw)/1.15 var(--f-titulo); color: var(--tinta-hq); background: #fff;
+  border: 3.5px solid var(--tinta-hq); border-radius: 1.4em; box-shadow: 4px 4px 0 rgba(29, 36, 51, .35); animation: surge .35s .15s both;
+}
+.hq-balao::after {
+  content: ""; position: absolute; bottom: -18px; width: 22px; height: 22px; background: #fff;
+  border-right: 3.5px solid var(--tinta-hq); border-bottom: 3.5px solid var(--tinta-hq); transform: skewX(28deg) rotate(45deg);
+}
+.hq-balao.esq::after { left: 22%; transform: skewX(-28deg) rotate(45deg); }
+.hq-balao.dir::after { right: 22%; }
+.hq-som {
+  position: absolute; z-index: 1; right: 6%; top: 8%; line-height: 1; pointer-events: none;
+  font: 800 max(26px, 9cqw)/1 var(--f-titulo); color: #ffd23f; -webkit-text-stroke: max(2px, .5cqw) #1d2433; paint-order: stroke fill;
+  text-shadow: max(3px, .9cqw) max(3px, .9cqw) 0 #e63946; transform: rotate(-9deg); animation: hq-som .5s .25s cubic-bezier(.2, 1.6, .4, 1) both;
+}
+@keyframes hq-som { from { transform: rotate(-9deg) scale(.2); opacity: 0; } }
+.hq-gira { transform-box: fill-box; transform-origin: center; animation: hq-tonta 1.6s ease-in-out infinite; }
+@keyframes hq-tonta { 50% { transform: rotate(5deg) translateY(4px); } }
+.hq-pontos { display: flex; gap: 8px; }
+.hq-pontos i { width: 12px; height: 12px; border-radius: 50%; background: rgba(43, 58, 85, .2); }
+.hq-pontos i.visto { background: rgba(43, 58, 85, .5); }
+.hq-pontos i.agora { background: var(--sol); box-shadow: 0 0 0 3px var(--sol-borda); }
+.hq-seguir { min-width: 4.5em; }
+@media (prefers-reduced-motion: reduce) { .hq-quadro, .hq-balao, .hq-som, .hq-gira, .ev-pedra.atual, .ev-pedra.abriu, .ev-fim-estrela { animation: none; } }
+/* ===== Academia dos Números: rodadas (maçãs, bruxas, bolhas, trilha, balões, cesta, diploma) ===== */
+.boca-a { display: none; }
+[data-boca="aberta"] .boca-a { display: inline; }
+[data-boca="aberta"] .boca-f { display: none; }
+.ac { --maca: clamp(58px, 8.6vw, 108px); }
+.ac .fala .avatar { --av: clamp(66px, min(10vw, 12vh), 116px); }
+.ac .marca, .ac-casa .ac-prato.cheio {
+  font: 800 clamp(16px, 2vw, 24px)/1 var(--f-titulo); color: var(--tinta);
+}
+.ac .marca {
+  position: absolute; top: -6px; right: -6px; min-width: 1.7em; height: 1.7em; padding-inline: 4px; box-sizing: border-box; border-radius: 999px; line-height: 1.7em;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--sol) 40%, #fff), var(--sol)); box-shadow: 0 3px 0 var(--sol-borda), 0 6px 10px rgba(43, 58, 85, .2); animation: surge .3s both;
+}
+/* a Capitã comendo */
+.avatar.nhac { animation: ac-nhac .35s; }
+@keyframes ac-nhac { 40% { transform: scale(1.14, .9); } 70% { transform: scale(.96, 1.06); } }
+.ac-nhac {
+  position: absolute; left: 50%; top: -8%; z-index: 3; pointer-events: none; white-space: nowrap;
+  font: 800 clamp(18px, 2.6vw, 28px)/1 var(--f-titulo); color: #ffd23f; -webkit-text-stroke: 2px #1d2433; paint-order: stroke fill; text-shadow: 3px 3px 0 #e63946;
+  animation: ac-sobe .8s ease-out forwards;
+}
+@keyframes ac-sobe { from { transform: translate(-50%, 10px) scale(.5) rotate(-8deg); opacity: 0; } 25% { opacity: 1; transform: translate(-50%, -10px) scale(1.1) rotate(-8deg); } to { transform: translate(-50%, -40px) scale(1) rotate(-8deg); opacity: 0; } }
+.avatar.poderosa { box-shadow: 0 0 0 6px rgba(255, 210, 63, .8), 0 0 34px 12px rgba(255, 210, 63, .75), 0 6px 0 rgba(43, 58, 85, .16); animation: brilha .9s ease-in-out infinite; }
+
+/* maçãs */
+.ac-maca { position: relative; width: var(--maca); aspect-ratio: 1; padding: 0; border: 0; background: none; cursor: pointer; line-height: 0; border-radius: 50%; }
+.ac-maca > svg { width: 100%; height: 100%; display: block; overflow: visible; filter: drop-shadow(0 5px 3px rgba(43, 58, 85, .25)); }
+.ac-maca .faisca { transform-box: fill-box; transform-origin: center; animation: cintila 1.6s ease-in-out infinite; }
+.ac-maca.solta { position: absolute; transform: translate(-50%, -50%); }
+.ac-maca.proxima > svg { filter: drop-shadow(0 0 10px rgba(255, 210, 63, .95)) drop-shadow(0 5px 3px rgba(43, 58, 85, .25)); }
+.ac-maca.proxima { animation: ac-quica 1s ease-in-out infinite; }
+.ac-maca.solta.proxima { animation: none; }
+@keyframes ac-quica { 50% { transform: translateY(-8px) scale(1.05); } }
+.ac-maca.comida, .ac-maca.usada { visibility: hidden; pointer-events: none; }
+.ac-maca.quase { animation: balanca .5s; }
+.ac-maca.solta.quase { animation: none; }
+
+/* comer guiado: trilha de pratinhos (o número aparece no prato) */
+.ac-trilha-macas { display: grid; grid-template-columns: repeat(var(--cols), auto); justify-content: center; gap: clamp(8px, 1.6vw, 18px) clamp(10px, 2vw, 22px); }
+.ac-casa { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.ac-prato {
+  display: inline-flex; align-items: center; justify-content: center; width: calc(var(--maca) * 1.05); height: calc(var(--maca) * .42); border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 35%, #ffffff 0 45%, #dceefc 46% 70%, #a9d2f2 71%); box-shadow: 0 4px 0 rgba(43, 58, 85, .18); color: transparent;
+}
+.ac-prato.cheio { color: var(--tinta); font-size: clamp(20px, 2.8vw, 32px); animation: pula .45s; }
+.ac-prato.contando, .ac-pedra.contando, .ac-vaga.contando { animation: ac-acende .5s; background: radial-gradient(ellipse at 50% 35%, #fffbe0 0 45%, #ffe27a 46% 70%, #ffc93c 71%); }
+@keyframes ac-acende { 40% { transform: scale(1.28); } }
+
+/* a fase da bruxa: maçãs soltas, a bruxa e a barra de força */
+.ac-arena { position: relative; display: flex; align-items: center; justify-content: center; gap: clamp(8px, 2vw, 26px); width: 100%; max-width: 1000px; }
+.ac-pomar { position: relative; flex: 1 1 0; max-width: 620px; aspect-ratio: 300 / 230; }
+.ac-pomar .ac-arvore-fundo, .ac-arvore .ac-arvore-fundo { position: absolute; inset: 0; width: 100%; height: 100%; }
+.ac-bruxa { --bw: clamp(130px, 21vw, 250px); position: relative; display: inline-block; flex: none; width: var(--bw); line-height: 0; }
+.ac-bruxa > svg { width: 100%; height: auto; display: block; overflow: visible; filter: drop-shadow(0 8px 6px rgba(43, 58, 85, .2)); }
+.ac-bruxa.avatar { background: none; box-shadow: none; border-radius: 0; aspect-ratio: auto; --av: var(--bw); }
+.ac-bruxa.avatar.falando::after { display: none; }
+.ac-bruxa.falando > svg { animation: ac-fala .5s ease-in-out infinite alternate; }
+@keyframes ac-fala { to { transform: translateY(-4px) rotate(1.5deg); } }
+.ac-bruxa.ai > svg { animation: balanca .45s; }
+.ac-bruxa.derrotada > svg { animation: ac-cai 1.2s ease-out both; }
+@keyframes ac-cai { 0% { transform: rotate(0); } 30% { transform: rotate(-20deg) scale(1.05); } 60% { transform: rotate(12deg) translateY(6px); } 100% { transform: rotate(-6deg) translateY(10px) scale(.96); } }
+.ac-roda { transform-box: fill-box; transform-origin: center; animation: ac-gira 1.4s linear infinite; }
+@keyframes ac-gira { to { transform: rotate(360deg); } }
+.ac-pow {
+  position: absolute; right: 6%; top: 4%; z-index: 4; pointer-events: none;
+  font: 800 clamp(40px, 8vw, 92px)/1 var(--f-titulo); color: #ffd23f; -webkit-text-stroke: 3px #1d2433; paint-order: stroke fill; text-shadow: 5px 5px 0 #e63946;
+  animation: hq-som .45s cubic-bezier(.2, 1.6, .4, 1) both;
+}
+.ac-medidor { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.ac-vaga {
+  display: inline-flex; align-items: center; justify-content: center; width: clamp(38px, 5.4vw, 58px); aspect-ratio: 1; box-sizing: border-box; border-radius: 14px;
+  border: 4px dashed rgba(43, 58, 85, .35); background: rgba(255, 255, 255, .5); font: 800 clamp(20px, 3vw, 32px)/1 var(--f-titulo); color: var(--tinta);
+}
+.ac-vaga.cheia { border: 4px solid var(--sol-borda); background: linear-gradient(180deg, #fff8c4, var(--sol)); box-shadow: 0 4px 0 var(--sol-borda); animation: pula .45s; }
+
+/* bolhas com as crianças */
+.ac-ceu-bolhas { position: relative; width: 100%; max-width: 900px; aspect-ratio: 2 / 1; border-radius: 28px; border: 4px solid #fff; box-sizing: border-box;
+  background: radial-gradient(ellipse 14% 9% at 18% 22%, #fff 60%, transparent 62%), radial-gradient(ellipse 11% 7% at 25% 18%, #fff 60%, transparent 62%),
+    radial-gradient(ellipse 15% 9% at 78% 30%, #fff 60%, transparent 62%), radial-gradient(ellipse 10% 7% at 70% 26%, #fff 60%, transparent 62%),
+    var(--grao), linear-gradient(180deg, #8fd3f5, #d8f1ff); box-shadow: var(--sombra-suave); }
+.ac-bolha { position: absolute; width: var(--bolha, clamp(72px, 12vw, 132px)); aspect-ratio: 1; padding: 0; border: 0; background: none; cursor: pointer; line-height: 0; transform: translate(-50%, -50%); animation: ac-boia 3.2s ease-in-out infinite; }
+.ac-bolha > svg { width: 100%; height: 100%; overflow: visible; }
+@keyframes ac-boia { 50% { margin-top: -10px; } }
+.ac-bolha.solta { animation: ac-pulinho .6s ease-out 2; cursor: default; }
+@keyframes ac-pulinho { 40% { margin-top: -26px; } }
+.ac-bruxa.pequena { --bw: clamp(60px, 8.5vw, 100px); position: absolute; right: 2%; bottom: 3%; }
+
+/* o número da bruxa e cadê a bruxa */
+.ac-mostra .ac-bruxa { --bw: clamp(130px, min(22vw, 30vh), 250px); }
+.ac-bruxa.mostra-numero .ac-numero { transform-box: fill-box; transform-origin: center; animation: ac-acende 1s ease-in-out infinite; }
+.ac-num .numero { font-size: clamp(42px, 7vw, 84px); }
+.ac-bruxas { gap: clamp(10px, 2vw, 24px); }
+.cartao.ac-escolha-bruxa { width: clamp(110px, 20vw, 220px); aspect-ratio: 200 / 270; padding: 6px; line-height: 0; }
+.cartao.ac-escolha-bruxa > svg { width: 100%; height: 100%; }
+
+/* quantas maçãs: o campo */
+/* a toalha de piquenique (xadrez vermelho) */
+.ac-campo { position: relative; width: 100%; max-width: 720px; aspect-ratio: 16 / 9; border-radius: 22px; border: 5px solid #fff; box-sizing: border-box; box-shadow: var(--sombra-suave);
+  background: var(--grao), linear-gradient(90deg, rgba(230, 57, 70, .32) 50%, transparent 50%) 0 0 / 64px 64px, linear-gradient(rgba(230, 57, 70, .32) 50%, transparent 50%) 0 0 / 64px 64px, #fff7ef; }
+.ac-campo.dez { aspect-ratio: 2.3 / 1; max-width: 680px; }
+.ac-arena.final .ac-campo { flex: 1 1 0; }
+.grade.numeros.chama .cartao { animation: brilha 1.1s ease-in-out 2; }
+
+/* o número que falta: a trilha */
+.ac-trilha { display: flex; flex-wrap: nowrap; justify-content: center; gap: clamp(6px, 1.2vw, 12px); max-width: 980px; }
+.ac-pedra {
+  position: relative; display: inline-flex; align-items: center; justify-content: center; width: var(--pedra, clamp(46px, 7.4vw, 82px)); aspect-ratio: 1; box-sizing: border-box; border-radius: 50%;
+  font: 800 calc(var(--pedra, 64px) * .52)/1 var(--f-titulo); color: var(--tinta);
+  background: var(--grao), radial-gradient(circle at 35% 30%, #ffffff, #dcd3ee 75%); border: 3px solid #8d7bb8; box-shadow: 0 5px 0 rgba(43, 58, 85, .2);
+}
+.ac-pedra.buraco { background: rgba(255, 255, 255, .35); border: 4px dashed #7a68a6; color: #7a68a6; }
+.ac-pedra.chama { animation: balanca .6s ease-in-out infinite; }
+.ac-pedra.achada { border-color: var(--certo); background: var(--grao), radial-gradient(circle at 35% 30%, #ffffff, #c9f0cf 75%); animation: pula .5s; }
+.ac-chapeuzinho { position: absolute; width: 74%; right: -40%; top: -62%; line-height: 0; pointer-events: none; transform: rotate(14deg); }
+.ac-chapeuzinho > svg { width: 100%; height: auto; }
+
+/* contar na ordem: balões */
+.ac-baloes { position: relative; width: 100%; max-width: 860px; aspect-ratio: 2.2 / 1; }
+.ac-balao { position: absolute; width: clamp(50px, 7.6vw, 88px); aspect-ratio: 80 / 120; padding: 0; border: 0; background: none; cursor: pointer; line-height: 0; transform: translate(-50%, -50%); animation: ac-boia 3s ease-in-out infinite; }
+.ac-balao > svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 6px 4px rgba(43, 58, 85, .2)); }
+.ac-balao.foi { visibility: hidden; pointer-events: none; }
+.ac-balao.dica > svg { filter: drop-shadow(0 0 12px rgba(255, 210, 63, 1)); }
+.ac-balao.quase > svg { animation: balanca .5s; }
+.ac-fila { display: flex; justify-content: center; gap: clamp(4px, 1vw, 10px); max-width: 100%; }
+.ac-vaga-balao { width: clamp(30px, 5.6vw, 60px); aspect-ratio: 80 / 120; box-sizing: border-box; border: 3px dashed rgba(43, 58, 85, .3); border-radius: 50% 50% 46% 46%; line-height: 0; }
+.ac-vaga-balao.cheia { border: 0; animation: pula .4s; }
+.ac-vaga-balao > svg { width: 100%; height: 100%; }
+
+/* encher a cesta */
+.ac-pegar-duo { display: flex; align-items: flex-end; justify-content: center; gap: clamp(8px, 2vw, 24px); width: 100%; max-width: 900px; }
+.ac-arvore { position: relative; flex: 0 1 470px; aspect-ratio: 300 / 260; --maca: clamp(42px, 6.4vw, 76px); }
+.ac-arvore-fundo { position: absolute; inset: 0; width: 100%; height: 100%; }
+.ac-cesta { position: relative; flex: 0 1 330px; aspect-ratio: 400 / 240; }
+.ac-cesta-fundo { position: absolute; inset: 0; line-height: 0; }
+.ac-cesta-fundo > svg { width: 100%; height: 100%; }
+.ac-dentro { position: absolute; left: 12%; right: 12%; top: 4%; bottom: 30%; display: flex; flex-wrap: wrap-reverse; align-content: flex-start; justify-content: center; gap: 0 2px; }
+.ac-maca.mini { width: clamp(26px, 4vw, 44px); animation: surge .3s both; }
+.ac-placar {
+  position: absolute; right: -6px; top: -14px; min-width: 1.6em; height: 1.6em; padding-inline: 6px; box-sizing: border-box; border-radius: 999px; text-align: center;
+  font: 800 clamp(22px, 3.4vw, 38px)/1.6em var(--f-titulo); color: var(--tinta); background: linear-gradient(180deg, #fff8c4, var(--sol)); box-shadow: 0 4px 0 var(--sol-borda);
+}
+
+/* diploma */
+.ac-papel {
+  display: flex; flex-direction: column; align-items: center; gap: 8px; width: min(100%, 640px); padding: 18px 20px; box-sizing: border-box; border-radius: 22px;
+  background: var(--grao), linear-gradient(180deg, #fffdf2, #fbefc9); border: 6px double #c99a3a; box-shadow: var(--sombra-suave);
+}
+.ac-medalha { width: clamp(80px, 12vw, 120px); height: auto; animation: flutua 3s ease-in-out infinite; }
+.ac-papel-nome { margin: 0; font: 800 clamp(30px, 5vw, 56px)/1 var(--f-titulo); color: #c2407f; }
+.ac-dez { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.ac-dez-n { width: clamp(36px, 5.6vw, 52px); aspect-ratio: 1; border: 0; border-radius: 50%; cursor: pointer; font: 800 clamp(18px, 2.8vw, 26px)/1 var(--f-titulo); color: #fff; background: linear-gradient(180deg, #ff8fb8, #e0479a); box-shadow: 0 4px 0 #9c1f63; }
+.ac-dez-n.pula { animation: pula .4s; }
+/* celular em pé: a cesta embaixo da árvore; a bruxa menor ao lado das maçãs */
+@media (max-width: 600px) {
+  .ac-pegar-duo { flex-direction: column; align-items: center; }
+  .ac-arvore { flex: none; width: min(100%, 380px); }
+  .ac-cesta { flex: none; width: min(78%, 300px); }
+  .ac-arena .ac-bruxa { --bw: clamp(84px, 25vw, 160px); }
+  .ac-arena { gap: 6px; }
+}
+@media (prefers-reduced-motion: reduce) { .ac-maca.proxima, .ac-bolha, .ac-balao, .ac-roda, .ac-medalha, .ac-maca .faisca { animation: none; } }
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
@@ -3871,6 +4156,7 @@ function abreJogo(j) {
     el("p", "dica-pai", "Pai: compartilhe esta aba na videochamada. Ela aponta ou fala a resposta e você clica por ela."));
 }
 function fim() {
+  if (jogo && jogo.evento && typeof Evento !== "undefined") return Evento.fimFase();   // fase de um evento: o evento comemora e guarda
   const j = jogo, n = nomeCrianca();
   const placar = guarda.ler("placar", {}) || {};
   placar[j.id] = { e: estrelas, d: Date.now() };
@@ -3908,7 +4194,7 @@ function modo(m) {
   if (!noMundo && typeof Mundo !== "undefined") Mundo.fechar();
   const b = $("#b-menu");
   b.hidden = m === "inicio";
-  const destino = m === "jogo" ? (jogo && UNIVERSOS[jogo.universo] ? "Jogos" : "Início") : (m === "lista" || m === "conversa") && UNIVERSOS[universoAtual] ? UNIVERSOS[universoAtual].curto : "Início";
+  const destino = m === "jogo" ? (jogo && jogo.evento ? jogo.eventoCurto : jogo && UNIVERSOS[jogo.universo] ? "Jogos" : "Início") : (m === "lista" || m === "conversa") && UNIVERSOS[universoAtual] ? UNIVERSOS[universoAtual].curto : "Início";
   b.replaceChildren(el("span", "ic", "←"), el("span", "txt", " " + destino)); b.setAttribute("aria-label", "Voltar: " + destino);
 }
 // voltar um passo: jogo → lista do mundo (ou início), lista ou conversa → casa da heroína, casa → início
@@ -3917,7 +4203,7 @@ function voltar() {
   if (modoAtual === "lista" || modoAtual === "conversa") return abrirUniverso(universoAtual);
   inicio();
 }
-function menu() { const u = jogo && UNIVERSOS[jogo.universo] ? jogo.universo : null; if (u) listaDoUniverso(u); else inicio(); }
+function menu() { if (jogo && jogo.evento && typeof Evento !== "undefined") return Evento.voltarAoMapa(); const u = jogo && UNIVERSOS[jogo.universo] ? jogo.universo : null; if (u) listaDoUniverso(u); else inicio(); }
 
 function cartaoJogo(j, placar) {
   const b = el("button", "jogo");
@@ -3981,6 +4267,7 @@ function inicio() {
   t.append(topo, mundos, elT("h3", "subtitulo", "Mais brincadeiras"), extras,
     el("p", "dica-pai", "Pai: compartilhe esta aba na chamada (com o som da aba). Cada heroína tem o seu mundo: a casa dela, viva, e os jogos do tema dela no botão 🎲 Jogos. Elas leem as instruções em voz alta; clique na heroína para repetir, ou desligue no botão 🔊. As palavras marcadas em amarelo mudam entre Brasil e Portugal; no botão Legenda você escolhe qual versão aparece grande (a voz acompanha)."),
     creditos());
+  if (typeof Evento !== "undefined") Evento.noInicio(t);
 }
 
 /* a lista de jogos de um mundo (aberta pelo 🎲 Jogos da casa da heroína) */
@@ -8688,7 +8975,7 @@ const FICHAS = {
   }
 };
 
-const IDADE = "3 ou 4 anos";   // a idade dela, para a IA calibrar as palavras (atualize conforme ela crescer)
+const IDADE = "4 anos";   // a idade dela, para a IA calibrar as palavras (atualize conforme ela crescer; 4 anos em outubro de 2026)
 const LIM_FALA = 300;          // o que o pai digita, por fala
 const LIM_RESPOSTA = 420;      // o balão da heroína
 const TURNOS_CONTEXTO = 14;    // falas recentes que vão junto em cada pergunta à IA
@@ -10136,6 +10423,1238 @@ if (bTela && (!podeTelaCheia || instalado)) bTela.remove();
 if (instalado) document.documentElement.classList.add("app-instalado");
 
 return { ajustar: agendar, instalado, podeTelaCheia, toque };
+})();
+</script>
+<script>
+/* ===== Evento: uma aba temporária, focada num assunto (o primeiro: Academia dos Números, outubro de 2026) =====
+   Feito à parte do resto da Brinquedoteca, para ser criado, testado e tirado (ou mantido) sem mexer nos jogos:
+   - cada evento mora na sua pasta (conversa/evento/<id>/: <id>.js, <id>.css e vozes.js) e se apresenta aqui com
+     Evento.registrar({...}); a página é montada por montar_conversa.py, que junta as pastas que existirem.
+     Tirar um evento: apagar a pasta dele (ou pôr ate: "AAAA-MM-DD" e ele some da tela inicial depois desse dia).
+     Ficar de vez: ele continua igual; o progresso guardado não muda de lugar.
+   - um evento tem níveis; cada nível tem fases; cada fase é uma lista de rodadas que roda no mesmo motor dos jogos
+     (telas[tipo], acertou, errou, proxima, o zoom do Celular). A fase seguinte só abre quando a anterior termina.
+   - o progresso fica guardado neste aparelho (localStorage "brinq-evento-<id>"): só quais fases terminaram e com quantas
+     estrelas, e se o pai liberou tudo. O pai apaga em "Recomeçar o evento" (e o app apaga junto em "Apagar tudo").
+   - as falas são gravadas (vozes/<quem>-ev-<id>.mp3 + o índice em vozes.js), nunca a voz do navegador.
+   Ganchos no motor (montar_conversa.py): fim() e menu() de uma fase voltam para cá; o botão ← mostra o nome do evento;
+   a tela inicial ganha o cartão do evento logo depois dos mundos.
+   Usa da página: jogo, rodadas, i, estrelas, travado, instrucao, telas, palco, novaTela, el, elT, br, pt, junta, ariaDe,
+   avatar, falar, calar, falando, depois, limpaTimers, aplicaTema, modo, pintarEstrelas, carregarPacote, VOZES_INDICE,
+   VOZES_PACOTES, guarda, nomeCrianca, som, festa, botaoGrande, proxima, inicio e $. */
+const Evento = (() => {
+const eventos = [];
+let atual = null;            // a fase em jogo: { ev, f }
+let abriuAgora = null;       // a fase que acabou de abrir (o cadeado abre com animação no mapa)
+const jaVeio = new Set();    // boas-vindas: uma vez por visita à página
+const hojeISO = () => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
+
+/* ---------- registro ---------- */
+function registrar(ev) {
+  ev.niveis.forEach((nv, a) => {
+    nv.indice = a;
+    nv.fases.forEach((f, b) => { f.indice = b; f.nivel = nv; f.id = f.id || nv.id + "-" + (b + 1); });
+  });
+  ev.fases = ev.niveis.flatMap((nv) => nv.fases);
+  ev.pacotes = ev.pacotes || [];
+  eventos.push(ev);
+  return ev;
+}
+// as falas gravadas do evento entram no mesmo índice das heroínas (cada voz nova ganha a sua chave: "bruxa2", ...)
+function vozes(indice, pacotes) {
+  for (const q in indice) VOZES_INDICE[q] = Object.assign(VOZES_INDICE[q] || {}, indice[q]);
+  (pacotes || []).forEach((p) => { if (!VOZES_PACOTES.includes(p)) VOZES_PACOTES.push(p); });
+}
+const ativos = () => eventos.filter((ev) => (!ev.de || hojeISO() >= ev.de) && (!ev.ate || hojeISO() <= ev.ate));
+const achar = (id) => eventos.find((ev) => ev.id === id) || null;
+
+/* ---------- progresso (neste aparelho) ---------- */
+function ler(ev) {
+  const p = guarda.ler("evento-" + ev.id, null);
+  return p && typeof p === "object" && p.feitas && typeof p.feitas === "object" ? p : { feitas: {} };
+}
+function gravar(ev, p) { guarda.salvar("evento-" + ev.id, p); }
+function apagar(ev) { try { localStorage.removeItem("brinq-evento-" + ev.id); } catch (e) {} }
+const feita = (p, f) => !!p.feitas[f.id];
+function aberta(ev, p, f) { const k = ev.fases.indexOf(f); return k <= 0 || !!p.liberado || feita(p, f) || feita(p, ev.fases[k - 1]); }
+const proximaFase = (ev, p) => ev.fases.find((f) => !feita(p, f)) || null;
+function estadoNivel(ev, p, nv) {
+  if (nv.fases.every((f) => feita(p, f))) return "vencido";
+  return nv.fases.some((f) => aberta(ev, p, f)) ? "aberto" : "trancado";
+}
+function resumo(ev, p) {
+  const n = ev.fases.filter((f) => feita(p, f)).length, prox = proximaFase(ev, p);
+  return p.completo && !prox ? "Completo! ⭐ " + n + " fases" : n + " de " + ev.fases.length + " fases" + (prox ? " · agora: " + br(prox.nivel.nome) : "");
+}
+const tituloFase = (f) => junta(f.nivel.nome, " · ", f.titulo);
+
+/* ---------- tela inicial: o cartão do evento, como uma faixa entre a pergunta e os mundos ---------- */
+function noInicio(t) {
+  const evs = ativos();
+  if (!evs.length || !t) return;
+  const box = el("section", "eventos");
+  evs.forEach((ev) => box.append(cartao(ev)));
+  const mundos = t.querySelector(".mundos");
+  if (mundos) mundos.before(box); else t.append(box);
+}
+function cartao(ev) {
+  const p = ler(ev);
+  const b = el("button", "evento-cartao ev-" + ev.id);
+  b.type = "button";
+  b.setAttribute("aria-label", "Evento: " + ariaDe(ev.titulo));
+  const capa = el("span", "evento-capa"); capa.innerHTML = ev.capa ? ev.capa(p) : "";
+  const txt = el("span", "evento-txt");
+  txt.append(el("span", "evento-selo", ev.selo || "Evento"), elT("span", "evento-nome", ev.titulo), elT("span", "evento-sobre", ev.sobre || ""),
+    el("span", "evento-progresso", resumo(ev, p)));
+  b.append(capa, txt);
+  b.addEventListener("click", () => abrir(ev));
+  return b;
+}
+
+/* ---------- o mapa do evento: um andar por nível (o primeiro embaixo), uma pedra por fase ---------- */
+function abrir(ev) {
+  if (typeof ev === "string") ev = achar(ev);
+  if (!ev) return inicio();
+  limpaTimers(); calar();
+  jogo = null; rodadas = []; i = -1; travado = false; atual = null;
+  aplicaTema(ev.tema); modo("evento");
+  $("#titulo").textContent = br(ev.titulo);
+  const p = ler(ev), prox = proximaFase(ev, p), Q = ev.narradora;
+  // as vozes do mapa primeiro; depois as do nível em que ela está (para a fase abrir já falando)
+  [...ev.pacotes, ...((prox && prox.nivel.pacotes) || [])].reduce((pr, n) => pr.then(() => carregarPacote(n)), Promise.resolve());
+  const t = novaTela("evento-mapa ev-" + ev.id);
+  const fala1 = !prox ? ev.textos.completo : ev.textos.escolha;
+  const primeiraVez = !jaVeio.has(ev.id);
+  jaVeio.add(ev.id);
+  instrucao = { t: fala1, quem: Q };
+  depois(() => { if (primeiraVez) falar(ev.textos.boasVindas, Q); falar(fala1, Q, primeiraVez); }, 350);
+  const lado = el("div", "ev-lado");
+  const cab = el("div", "fala");
+  cab.append(avatar(Q, null, true), elT("h2", "pergunta", primeiraVez ? junta(ev.textos.boasVindas, " ", fala1) : fala1));
+  lado.append(cab);
+  if (prox) lado.append(botaoGrande(junta("▶ ", tituloFase(prox)), () => abrirFase(ev, prox), "ev-continuar chama"));
+  else if (ev.premio) lado.append(botaoGrande(ev.premio.botao, () => ev.premio.abrir(), "ev-continuar"));
+  t.append(lado);
+  const torre = el("div", "ev-torre");
+  if (ev.topo) { const topo = el("div", "ev-topo"); topo.innerHTML = ev.topo(p); torre.append(topo); }
+  let foco = null;
+  [...ev.niveis].reverse().forEach((nv) => {
+    const est = estadoNivel(ev, p, nv);
+    const andar = el("div", "ev-andar " + est);
+    andar.style.setProperty("--cor-nivel", nv.cor || "#ffd23f");
+    const ret = el("button", "ev-retrato");
+    ret.type = "button"; ret.innerHTML = ev.retrato(nv, est);
+    ret.setAttribute("aria-label", ariaDe(nv.nome) + (est === "trancado" ? " (trancado)" : ""));
+    ret.addEventListener("click", () => {
+      if (est === "trancado") { treme(ret); return falar(ev.textos.nivelTrancado, Q); }
+      instrucao = { t: nv.fala, quem: Q }; falar(nv.fala, Q);
+    });
+    const info = el("div", "ev-andar-info");
+    const nome = elT("span", "ev-andar-nome", nv.nome);
+    if (est === "vencido") nome.append(el("span", "ev-vencido", " ✔"));
+    const pedras = el("div", "ev-pedras");
+    nv.fases.forEach((f, k) => {
+      const ok = feita(p, f), pode = aberta(ev, p, f), eh = prox === f;
+      const b = el("button", "ev-pedra" + (ok ? " feita" : "") + (eh ? " atual" : "") + (!pode ? " trancada" : "") + (abriuAgora === f.id && pode ? " abriu" : ""));
+      b.type = "button";
+      b.append(el("span", "ev-pedra-ic", pode ? f.icone : "🔒"), el("span", "ev-pedra-n", String(k + 1)));
+      if (ok) b.append(el("span", "ev-pedra-estrela", "⭐"));
+      b.setAttribute("aria-label", "Fase " + (k + 1) + ": " + ariaDe(f.titulo) + (ok ? " (feita)" : !pode ? " (trancada)" : ""));
+      b.title = br(f.titulo);
+      b.addEventListener("click", () => {
+        if (!pode) { treme(b); return falar(ev.textos.trancada, Q); }
+        abrirFase(ev, f);
+      });
+      pedras.append(b);
+      if (eh) foco = andar;
+    });
+    info.append(nome, pedras);
+    andar.append(ret, info);
+    torre.append(andar);
+  });
+  abriuAgora = null;
+  t.append(torre);
+  // a parte do pai: o que o evento treina, liberar as fases e apagar o progresso
+  const pai = el("div", "ev-pai");
+  pai.append(el("p", "dica-pai", ev.dicaPai || "Pai: cada fase abre a próxima. O progresso fica guardado neste aparelho."));
+  const linha = el("div", "ev-pai-botoes");
+  if (!p.liberado && prox) {
+    const lib = el("button", "btn-pai", "Liberar todas as fases"); lib.type = "button";
+    lib.title = "Para o pai escolher qualquer fase (a ordem continua aparecendo no mapa).";
+    lib.addEventListener("click", () => { const q = ler(ev); q.liberado = true; gravar(ev, q); abrir(ev); });
+    linha.append(lib);
+  }
+  const rec = el("button", "btn-pai", "Recomeçar o evento"); rec.type = "button";
+  rec.title = "Apaga o progresso deste evento neste aparelho.";
+  let armado = 0;
+  rec.addEventListener("click", () => {
+    if (Date.now() - armado > 5000) { armado = Date.now(); rec.textContent = "Toque de novo para apagar o progresso"; depois(() => { rec.textContent = "Recomeçar o evento"; }, 5000); return; }
+    apagar(ev); jaVeio.delete(ev.id); abrir(ev);
+  });
+  linha.append(rec);
+  pai.append(linha);
+  t.append(pai);
+  if (foco) depois(() => { try { foco.scrollIntoView({ block: "center", behavior: "smooth" }); } catch (e) {} }, 120);
+}
+function treme(b) { b.classList.remove("treme"); void b.offsetWidth; b.classList.add("treme"); som("quase"); }
+
+/* ---------- uma fase: as rodadas dela no motor dos jogos ---------- */
+function abrirFase(ev, f) {
+  limpaTimers(); calar();
+  const nv = f.nivel, Q = ev.narradora;
+  atual = { ev, f };
+  const j = {
+    id: "ev-" + ev.id, evento: ev.id, eventoCurto: ev.curto || br(ev.titulo), titulo: tituloFase(f), narradora: Q, personagens: [Q],
+    tema: nv.tema || ev.tema, semMistura: true,
+    rodadas: f.rodadas.map((r) => ({ quem: Q, ...r, _narra: Q, _jogo: "ev-" + ev.id, _fase: f, _nivel: nv }))
+  };
+  jogo = j; rodadas = j.rodadas.slice(); i = -1; estrelas = 0; travado = false;
+  pintarEstrelas(); aplicaTema(j.tema); modo("jogo");
+  $("#titulo").textContent = br(j.titulo);
+  [...ev.pacotes, ...(nv.pacotes || [])].forEach((n) => carregarPacote(n));
+  proxima();
+}
+// uma tela a mais do evento, fora da trilha (ex.: o diploma): roda no motor, não conta como fase
+function abrirExtra(ev, titulo, rs, pacotes) {
+  limpaTimers(); calar();
+  atual = { ev, f: null };
+  const Q = ev.narradora;
+  jogo = { id: "ev-" + ev.id, evento: ev.id, eventoCurto: ev.curto || br(ev.titulo), titulo, narradora: Q, personagens: [Q], tema: ev.tema, semMistura: true,
+    rodadas: rs.map((r) => ({ quem: Q, ...r, _narra: Q, _jogo: "ev-" + ev.id })) };
+  rodadas = jogo.rodadas.slice(); i = -1; estrelas = 0; travado = false;
+  pintarEstrelas(); aplicaTema(ev.tema); modo("jogo");
+  $("#titulo").textContent = br(ev.titulo) + " · " + br(titulo);
+  [...ev.pacotes, ...(pacotes || [])].forEach((n) => carregarPacote(n));
+  proxima();
+}
+// fim() do motor numa fase: guarda, comemora e oferece a próxima
+function fimFase() {
+  const a = atual;
+  if (!a) return inicio();
+  if (!a.f) return abrir(a.ev);
+  const { ev, f } = a, nv = f.nivel, Q = ev.narradora;
+  const p = ler(ev);
+  const antes = p.feitas[f.id];
+  p.feitas[f.id] = { e: Math.max(estrelas, (antes && antes.e) || 0), d: Date.now() };
+  const k = ev.fases.indexOf(f), seguinte = ev.fases[k + 1] || null;
+  const fimDoNivel = nv.fases[nv.fases.length - 1] === f;
+  if (!proximaFase(ev, p) && !p.completo) p.completo = Date.now();
+  if (seguinte && !antes) abriuAgora = seguinte.id;
+  gravar(ev, p);
+  const t = novaTela("ev-fim");
+  const msg = !seguinte ? ev.textos.completo : fimDoNivel ? ev.textos.nivelCompleto(nv) : ev.textos.faseCompleta;
+  const astro = el("div", "ev-fim-estrela", "⭐");
+  const cab = el("div", "fala");
+  cab.append(avatar(Q, "feliz"), elT("h2", "pergunta", msg));
+  const bts = el("div", "botoes");
+  if (seguinte) bts.append(botaoGrande(junta("▶ ", tituloFase(seguinte)), () => abrirFase(ev, seguinte), "chama"));
+  else if (ev.premio) bts.append(botaoGrande(ev.premio.botao, () => ev.premio.abrir()));
+  bts.append(botaoGrande(ev.curto ? ["Voltar: " + ev.curto, "Voltar: " + ev.curto] : "Voltar", () => abrir(ev), "calmo"));
+  t.append(astro, cab, bts, el("p", "dica-pai", "Pai: a fase ficou guardada neste aparelho. Dá para jogar de novo quando quiserem, tocando nela no mapa."));
+  som("certo"); festa();
+  instrucao = { t: msg, quem: Q };
+  depois(() => falar(msg, Q), 300);
+}
+function voltarAoMapa() { const a = atual; if (a) abrir(a.ev); else inicio(); }
+
+/* ---------- rodada de história em quadrinhos (um quadro por vez, cada um lido em voz alta) ----------
+   r.quadros: [{ cena: () => "<svg…>", som: "POW!", legenda: { quem, t }, baloes: [{ quem, t, lado: "esq"|"dir", x, y, w }] }]
+   r.fim: o texto do botão do último quadro (padrão "Vamos!"). */
+telas["ev-quadrinho"] = function (r) {
+  const t = novaTela("ev-hq");
+  const quadros = typeof r.quadros === "function" ? r.quadros() : r.quadros;
+  const pagina = el("div", "hq-pagina");
+  const pontos = el("div", "hq-pontos");
+  quadros.forEach(() => pontos.append(document.createElement("i")));
+  const seguir = botaoGrande("➜", () => mostra(k + 1), "hq-seguir");
+  let k = -1;
+  function mostra(n) {
+    if (n >= quadros.length) return proxima();
+    calar();
+    k = n;
+    const q = quadros[k];
+    const quadro = el("figure", "hq-quadro" + (q.classe ? " " + q.classe : ""));
+    quadro.style.setProperty("--giro", (k % 2 ? 0.7 : -0.7) + "deg");
+    if (q.legenda) quadro.append(elT("figcaption", "hq-legenda", q.legenda.t));
+    const cena = el("div", "hq-cena");
+    cena.innerHTML = typeof q.cena === "function" ? q.cena() : q.cena || "";
+    if (q.som) { const s = el("span", "hq-som", q.som); if (q.somPos) s.style.cssText = q.somPos; cena.append(s); }
+    (q.baloes || []).forEach((b) => {
+      const bl = elT("p", "hq-balao " + (b.lado || "esq") + (b.grito ? " grito" : ""), b.t);
+      bl.style.left = (b.x != null ? b.x : 4) + "%"; bl.style.top = (b.y != null ? b.y : 5) + "%";
+      if (b.w) bl.style.width = b.w + "%";
+      bl.addEventListener("click", () => { instrucao = { t: b.t, quem: b.quem }; falar(b.t, b.quem); });
+      cena.append(bl);
+    });
+    if (q.legenda) quadro.querySelector(".hq-legenda").addEventListener("click", () => falar(q.legenda.t, q.legenda.quem));
+    quadro.append(cena);
+    pagina.replaceChildren(quadro);
+    [...pontos.children].forEach((p, m) => { p.className = m < k ? "visto" : m === k ? "agora" : ""; });
+    trocaTexto(seguir, k === quadros.length - 1 ? r.fim || "Vamos!" : "➜");
+    seguir.classList.remove("chama");
+    const falas = [q.legenda, ...(q.baloes || [])].filter(Boolean);
+    if (falas.length) instrucao = { t: falas[0].t, quem: falas[0].quem };
+    depois(() => falas.forEach((f, m) => falar(f.t, f.quem, m > 0)), k === 0 ? 450 : 250);
+    const pronto = (n2) => { if (k !== n) return; if (falando() && n2 < 80) return depois(() => pronto(n2 + 1), 150); seguir.classList.add("chama"); };
+    depois(() => pronto(0), 900);
+    if (q.depois) depois(() => q.depois(quadro), 300);
+  }
+  t.append(pagina, pontos, seguir, el("p", "dica-pai", r.dica || "Pai: leia junto, apontando para os desenhos. Toque num balão para ouvir de novo; a seta passa para o próximo quadro."));
+  mostra(0);
+};
+
+return { registrar, vozes, noInicio, abrir, abrirFase, abrirExtra, fimFase, voltarAoMapa, ler, lista: eventos, achar,
+  emFase: () => !!(jogo && jogo.evento && atual) };
+})();
+</script>
+<script>
+/* ===== Academia dos Números: desenhos (SVG nossos, originais) =====
+   Maçã mágica, as cinco Bruxas-irmãs (o número de cada uma no vestido), as crianças nas bolhas, a Capitã de corpo
+   inteiro (o rosto é o mesmo das outras telas, estilo Toon Head do DiceBear, CC BY 4.0) e os quadros da história.
+   Fica num objeto só (AcademiaDesenhos) para a parte do jogo (academia.js) e para a folha de testes usarem. */
+const AcademiaDesenhos = (() => {
+const IRMAS = [2, 4, 6, 8, 10];
+const PELE = "#dfc8f4", PELE_ESC = "#b394d6";
+const COR = {
+  2: { chapeu: "#e0479a", chapeuEsc: "#9c1f63", vestido: "#ff8cc6", vestidoEsc: "#c2407f", cabelo: "#f5a623", cabeloEsc: "#c47d0e", meia: "#ffd1e8" },
+  4: { chapeu: "#f07d22", chapeuEsc: "#a3480b", vestido: "#ffb05c", vestidoEsc: "#c46a14", cabelo: "#7a4a2a", cabeloEsc: "#4f2d17", meia: "#ffe0b8" },
+  6: { chapeu: "#2fa35f", chapeuEsc: "#17643a", vestido: "#79d39b", vestidoEsc: "#2c8a52", cabelo: "#34344a", cabeloEsc: "#1c1c2a", meia: "#d6f5e1" },
+  8: { chapeu: "#2f6fd6", chapeuEsc: "#173f86", vestido: "#7fb0ff", vestidoEsc: "#2f5fb8", cabelo: "#c8432f", cabeloEsc: "#8a2616", meia: "#dce9ff" },
+  10: { chapeu: "#6a1fb8", chapeuEsc: "#3d0d73", vestido: "#a875e8", vestidoEsc: "#5c2aa3", cabelo: "#e4e4ee", cabeloEsc: "#a9a9bd", meia: "#ece0ff" }
+};
+const TINTA = "#2b3a55";
+let nId = 0;
+
+// gradientes e texturas comuns (uma vez na página; os desenhos usam url(#ac-...))
+const DEFS = `<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+<radialGradient id="ac-maca" cx=".34" cy=".3" r=".78"><stop offset="0" stop-color="#ff9a8f"/><stop offset=".42" stop-color="#ea3b33"/><stop offset="1" stop-color="#a3161c"/></radialGradient>
+<radialGradient id="ac-maca-ouro" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff6b8" stop-opacity=".95"/><stop offset=".6" stop-color="#ffd23f" stop-opacity=".35"/><stop offset="1" stop-color="#ffd23f" stop-opacity="0"/></radialGradient>
+<linearGradient id="ac-folha" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8fe36a"/><stop offset="1" stop-color="#3f9e3a"/></linearGradient>
+<radialGradient id="ac-bolha" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffffff" stop-opacity=".05"/><stop offset=".72" stop-color="#c8ecff" stop-opacity=".18"/><stop offset="1" stop-color="#7cc6ff" stop-opacity=".6"/></radialGradient>
+<linearGradient id="ac-ceu" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7cc8f2"/><stop offset="1" stop-color="#d9f1ff"/></linearGradient>
+<linearGradient id="ac-noite" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a2a7a"/><stop offset="1" stop-color="#8a6fd1"/></linearGradient>
+<linearGradient id="ac-por" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff9f68"/><stop offset="1" stop-color="#ffe3a3"/></linearGradient>
+<linearGradient id="ac-pedra" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8d7bb8"/><stop offset=".5" stop-color="#a593cf"/><stop offset="1" stop-color="#7a68a6"/></linearGradient>
+<linearGradient id="ac-ouro" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff2a8"/><stop offset=".5" stop-color="#ffd23f"/><stop offset="1" stop-color="#f0a500"/></linearGradient>
+<pattern id="ac-reticula" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(30)"><circle cx="2.5" cy="2.5" r="1.6" fill="#2b3a55" opacity=".09"/></pattern>
+<pattern id="ac-reticula-clara" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(30)"><circle cx="2.5" cy="2.5" r="1.7" fill="#fff" opacity=".22"/></pattern>
+<filter id="ac-grao" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="4" result="r"/><feColorMatrix in="r" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .07 0"/><feComposite in2="SourceGraphic" operator="in"/></filter>
+</defs></svg>`;
+function instalar() { if (!document.getElementById("ac-maca")) document.body.insertAdjacentHTML("afterbegin", DEFS); }
+
+/* ---------- maçã mágica ---------- */
+const MACA_CORPO = `<path d="M50 30C40 19 14 20 12 48C10 74 30 95 44 93C47 92.4 53 92.4 56 93C70 95 90 74 88 48C86 20 60 19 50 30Z" fill="url(#ac-maca)" stroke="#7a1414" stroke-width="3.2" stroke-linejoin="round"/>
+<path d="M50 30C40 19 14 20 12 48C10 74 30 95 44 93C47 92.4 53 92.4 56 93C70 95 90 74 88 48C86 20 60 19 50 30Z" fill="url(#ac-reticula-clara)"/>
+<path d="M50 31C48.5 22 51 14 57 7" stroke="#6b4423" stroke-width="5.5" fill="none" stroke-linecap="round"/>
+<path d="M55 18C62 5 79 5 86 11C78 22 63 25 55 18Z" fill="url(#ac-folha)" stroke="#2f7d32" stroke-width="2.6" stroke-linejoin="round"/>
+<path d="M58 17Q70 12 80 11" stroke="#2f7d32" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".7"/>
+<ellipse cx="31" cy="45" rx="7" ry="13" fill="#fff" opacity=".5" transform="rotate(-22 31 45)"/>
+<circle cx="64" cy="62" r="1.7" fill="#ffd7a8" opacity=".75"/><circle cx="44" cy="72" r="1.5" fill="#ffd7a8" opacity=".7"/><circle cx="72" cy="44" r="1.4" fill="#ffd7a8" opacity=".7"/><circle cx="56" cy="80" r="1.4" fill="#ffd7a8" opacity=".6"/>
+<path class="faisca" d="M80 66l2.6 6.4 6.4 2.6-6.4 2.6-2.6 6.4-2.6-6.4-6.4-2.6 6.4-2.6z" fill="#fff4b0" stroke="#e0a800" stroke-width="1.2" stroke-linejoin="round"/>`;
+const maca = (cls) => `<svg class="ac-maca-svg${cls ? " " + cls : ""}" viewBox="0 0 100 100" aria-hidden="true">${MACA_CORPO}</svg>`;
+const macaEm = (x, y, w) => `<svg x="${x}" y="${y}" width="${w}" height="${w}" viewBox="0 0 100 100" overflow="visible"><circle cx="50" cy="56" r="52" fill="url(#ac-maca-ouro)"/>${MACA_CORPO}</svg>`;
+
+/* ---------- as Bruxas-irmãs: o número no vestido ----------
+   humor: "rindo" (padrão), "brava", "derrotada" (tonta, chapéu torto), "feliz" (no fim, quando aprendem a contar).
+   Cada desenho tem duas bocas (.boca-f fechada, .boca-a aberta): a página abre a boca junto com a voz gravada. */
+function bruxaCorpo(n, humor) {
+  const c = COR[n] || COR[2], h = humor || "rindo";
+  const id = "acb" + ++nId;
+  const tonta = h === "derrotada";
+  const olhos = tonta
+    ? `<g fill="none" stroke="${TINTA}" stroke-width="2.6" stroke-linecap="round"><path d="M86 117m-7 0a7 7 0 1 1 7 7a4.5 4.5 0 1 1 -4.5 -4.5a2 2 0 1 1 2 2"/><path d="M114 117m-7 0a7 7 0 1 1 7 7a4.5 4.5 0 1 1 -4.5 -4.5a2 2 0 1 1 2 2"/></g>`
+    : h === "rindo"
+      ? `<path d="M77 118Q86 106 95 118" fill="none" stroke="${TINTA}" stroke-width="3.6" stroke-linecap="round"/><path d="M105 118Q114 106 123 118" fill="none" stroke="${TINTA}" stroke-width="3.6" stroke-linecap="round"/>`
+      : `<ellipse cx="86" cy="116" rx="9" ry="10.5" fill="#fff" stroke="${TINTA}" stroke-width="2"/><ellipse cx="114" cy="116" rx="9" ry="10.5" fill="#fff" stroke="${TINTA}" stroke-width="2"/>
+         <circle cx="${h === "brava" ? 88 : 87}" cy="118" r="5.2" fill="${TINTA}"/><circle cx="${h === "brava" ? 112 : 115}" cy="118" r="5.2" fill="${TINTA}"/>
+         <circle cx="89" cy="115.5" r="1.8" fill="#fff"/><circle cx="117" cy="115.5" r="1.8" fill="#fff"/>`;
+  const sobr = h === "brava"
+    ? `<path d="M76 101L95 107M124 101L105 107" stroke="${c.cabeloEsc}" stroke-width="4" stroke-linecap="round"/>`
+    : tonta ? `<path d="M77 103Q86 98 95 104M105 104Q114 98 123 103" fill="none" stroke="${c.cabeloEsc}" stroke-width="3.4" stroke-linecap="round"/>`
+      : `<path d="M77 101Q86 95 95 100M105 100Q114 95 123 101" fill="none" stroke="${c.cabeloEsc}" stroke-width="3.6" stroke-linecap="round"/>`;
+  const bocaF = h === "brava" ? `<path d="M90 148Q100 142 110 148" fill="none" stroke="#7a2140" stroke-width="3" stroke-linecap="round"/>`
+    : tonta ? `<path d="M86 146q3.5-4 7 0t7 0t7 0t7 0" fill="none" stroke="#7a2140" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>`
+      : h === "rindo" ? `<path d="M85 139Q100 158 115 139Z" fill="#7a2140" stroke="#5a1430" stroke-width="2" stroke-linejoin="round"/><path d="M90 141H110L107 145H93Z" fill="#fff"/>`
+        : `<path d="M86 141Q100 155 114 141" fill="none" stroke="#7a2140" stroke-width="3.8" stroke-linecap="round"/>`;
+  const bocaA = h === "brava" ? `<ellipse cx="100" cy="146" rx="8" ry="6" fill="#7a2140"/>`
+    : tonta ? `<ellipse cx="100" cy="146" rx="7" ry="8" fill="#7a2140"/><ellipse cx="100" cy="150" rx="4" ry="3" fill="#ff8fa3"/>`
+      : `<path d="M84 138Q100 166 116 138Z" fill="#7a2140" stroke="#5a1430" stroke-width="2" stroke-linejoin="round"/><path d="M90 140H110L107 144H93Z" fill="#fff"/><ellipse cx="100" cy="152" rx="7" ry="4" fill="#ff8fa3"/>`;
+  const giro = tonta ? -24 : h === "rindo" ? -4 : 0;
+  const numero = String(n), fs = numero.length > 1 ? 27 : 33;
+  const estrelinhas = tonta ? [[58, 72], [142, 70], [100, 54]].map(([x, y], k) => `<path class="ac-roda" style="animation-delay:${k * -0.4}s" d="M${x} ${y - 7}l2.2 4.8 5.2.6-3.9 3.5 1.1 5.1-4.6-2.6-4.6 2.6 1.1-5.1-3.9-3.5 5.2-.6z" fill="#ffd23f" stroke="#c98a00" stroke-width="1"/>`).join("") : "";
+  return `
+<ellipse cx="100" cy="262" rx="54" ry="7" fill="#2b3a55" opacity=".16"/>
+<g class="ac-pernas">
+  <rect x="82" y="232" width="13" height="22" rx="4" fill="${c.meia}" stroke="${TINTA}" stroke-width="2"/><rect x="105" y="232" width="13" height="22" rx="4" fill="${c.meia}" stroke="${TINTA}" stroke-width="2"/>
+  <path d="M82 238h13M82 244h13M82 250h13M105 238h13M105 244h13M105 250h13" stroke="${c.vestidoEsc}" stroke-width="3"/>
+  <path d="M96 252c2 8-6 11-14 11c-9 0-16-2-20-8c6 2 12 0 16-4z" fill="${c.chapeuEsc}" stroke="${TINTA}" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M104 252c-2 8 6 11 14 11c9 0 16-2 20-8c-6 2-12 0-16-4z" fill="${c.chapeuEsc}" stroke="${TINTA}" stroke-width="2" stroke-linejoin="round"/>
+</g>
+<path d="M72 94C54 102 48 124 52 142C55 156 49 168 42 178C58 181 69 170 71 157C73 141 72 120 80 102Z" fill="${c.cabelo}" stroke="${c.cabeloEsc}" stroke-width="2.4" stroke-linejoin="round"/>
+<path d="M128 94C146 102 152 124 148 142C145 156 151 168 158 178C142 181 131 170 129 157C127 141 128 120 120 102Z" fill="${c.cabelo}" stroke="${c.cabeloEsc}" stroke-width="2.4" stroke-linejoin="round"/>
+<path d="M56 150Q60 160 52 170M144 150Q140 160 148 170" fill="none" stroke="${c.cabeloEsc}" stroke-width="1.6" stroke-linecap="round" opacity=".6"/>
+<g class="ac-bracos">
+  <path d="M74 166C60 172 50 186 46 200" fill="none" stroke="${c.vestidoEsc}" stroke-width="17" stroke-linecap="round"/><path d="M74 166C60 172 50 186 46 200" fill="none" stroke="${c.vestido}" stroke-width="12" stroke-linecap="round"/>
+  <path d="M126 166C140 170 152 180 158 194" fill="none" stroke="${c.vestidoEsc}" stroke-width="17" stroke-linecap="round"/><path d="M126 166C140 170 152 180 158 194" fill="none" stroke="${c.vestido}" stroke-width="12" stroke-linecap="round"/>
+  <path d="M160 196L182 160" stroke="#6b4423" stroke-width="5" stroke-linecap="round"/>
+  <path d="M184 145l3.4 7.4 8 1-5.9 5.5 1.6 7.9-7.1-4-7.1 4 1.6-7.9-5.9-5.5 8-1z" fill="url(#ac-ouro)" stroke="#b77d00" stroke-width="1.6" stroke-linejoin="round"/>
+  <circle cx="45" cy="203" r="8" fill="${PELE}" stroke="${TINTA}" stroke-width="2"/><circle cx="160" cy="197" r="8" fill="${PELE}" stroke="${TINTA}" stroke-width="2"/>
+</g>
+<path d="M70 160Q100 150 130 160L156 234L141 229L128 238L114 229L100 238L86 229L72 238L59 229L44 234Z" fill="${c.vestido}" stroke="${c.vestidoEsc}" stroke-width="3" stroke-linejoin="round"/>
+<path d="M70 160Q100 150 130 160L156 234L141 229L128 238L114 229L100 238L86 229L72 238L59 229L44 234Z" fill="url(#ac-reticula)"/>
+<path d="M84 157L100 171L116 157L108 155L100 162L92 155Z" fill="#fff" stroke="${c.vestidoEsc}" stroke-width="2" stroke-linejoin="round"/>
+<g class="ac-numero"><circle cx="100" cy="199" r="25" fill="#fff" stroke="${c.vestidoEsc}" stroke-width="4"/><circle cx="100" cy="199" r="19" fill="none" stroke="${c.vestido}" stroke-width="2" stroke-dasharray="3 4"/>
+  <text x="100" y="${199 + fs * 0.35}" text-anchor="middle" font-family="'Baloo 2', 'Comic Sans MS', sans-serif" font-weight="800" font-size="${fs}" fill="${c.chapeuEsc}">${numero}</text></g>
+<rect x="93" y="146" width="14" height="14" rx="4" fill="${PELE_ESC}"/>
+<ellipse cx="100" cy="120" rx="38" ry="37" fill="${PELE}" stroke="${TINTA}" stroke-width="2.4"/>
+<ellipse cx="100" cy="120" rx="38" ry="37" fill="url(#ac-reticula)"/>
+<circle cx="74" cy="131" r="6.5" fill="#ff8fb8" opacity=".55"/><circle cx="126" cy="131" r="6.5" fill="#ff8fb8" opacity=".55"/>
+${olhos}${sobr}
+<path d="M101 121C97 127 94 132 97 135.5C100 138 104.5 136.5 105.5 132.5" fill="${PELE_ESC}" stroke="${TINTA}" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+<g class="boca-f">${bocaF}</g><g class="boca-a">${bocaA}</g>
+<g class="ac-chapeu" transform="rotate(${giro} 100 86)">
+  <path d="M64 92C60 86 70 80 100 80C130 80 140 86 136 92C120 98 80 98 64 92Z" fill="${c.cabelo}" stroke="${c.cabeloEsc}" stroke-width="2.4"/>
+  <ellipse cx="100" cy="84" rx="66" ry="13" fill="${c.chapeu}" stroke="${c.chapeuEsc}" stroke-width="3"/>
+  <path d="M68 82C74 60 86 32 104 12C111 5 124 6 129 14C121 12 115 16 113 24C121 44 128 62 132 82Q100 90 68 82Z" fill="${c.chapeu}" stroke="${c.chapeuEsc}" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M68 82C74 60 86 32 104 12C111 5 124 6 129 14C121 12 115 16 113 24C121 44 128 62 132 82Q100 90 68 82Z" fill="url(#ac-reticula)"/>
+  <path d="M71 71Q100 79 129 71L132 82Q100 90 68 82Z" fill="${c.chapeuEsc}"/>
+  <path d="M100 70.5l2.3 4.7 5.2.8-3.8 3.6.9 5.2-4.6-2.4-4.6 2.4.9-5.2-3.8-3.6 5.2-.8z" fill="url(#ac-ouro)" stroke="#b77d00" stroke-width="1"/>
+  <path d="M90 40l1.3 2.8 3 .4-2.2 2.1.5 3-2.6-1.4-2.6 1.4.5-3-2.2-2.1 3-.4z M112 54l1 2.1 2.3.3-1.7 1.6.4 2.3-2-1.1-2 1.1.4-2.3-1.7-1.6 2.3-.3z" fill="#fff" opacity=".85"/>
+</g>
+${estrelinhas}`;
+}
+const bruxa = (n, humor, cls) => `<svg class="ac-bruxa-svg${cls ? " " + cls : ""}" viewBox="0 0 200 270" aria-hidden="true">${bruxaCorpo(n, humor)}</svg>`;
+const bruxaEm = (n, humor, x, y, w, extra) => `<svg x="${x}" y="${y}" width="${w}" height="${w * 1.35}" viewBox="0 0 200 270" overflow="visible"${extra || ""}>${bruxaCorpo(n, humor)}</svg>`;
+// a irmã voando na vassoura (história)
+function bruxaVoando(n, x, y, w, vira) {
+  const s = w / 200;
+  return `<g transform="translate(${x} ${y}) scale(${vira ? -s : s} ${s})">
+    <path d="M-10 222L214 196" stroke="#8a5a2b" stroke-width="9" stroke-linecap="round"/>
+    <path d="M-10 222L-52 206L-58 228L-50 246Z" fill="#e8b84a" stroke="#8a5a2b" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M-14 222L-50 214M-14 224L-52 230M-14 226L-46 242" stroke="#b07d1f" stroke-width="3" stroke-linecap="round"/>
+    <svg x="0" y="-10" width="200" height="270" viewBox="0 0 200 270" overflow="visible">${bruxaCorpo(n, "rindo")}</svg></g>`;
+}
+
+/* ---------- crianças (nas bolhas da bruxa ou livres) ---------- */
+const CRIANCAS = [
+  { pele: "#f1c3a5", cabelo: "#5a3a22", camisa: "#2f9de0", estilo: "curto" },
+  { pele: "#8d5a3b", cabelo: "#1f1a1a", camisa: "#f2a33a", estilo: "chiquinhas" },
+  { pele: "#a36b4f", cabelo: "#2b1d16", camisa: "#6fbf5a", estilo: "black" },
+  { pele: "#f7d7b5", cabelo: "#e8c15a", camisa: "#e85d9b", estilo: "chanel" },
+  { pele: "#e0ac85", cabelo: "#c8522a", camisa: "#8a6fd1", estilo: "espetado" },
+  { pele: "#c68e7a", cabelo: "#3b2414", camisa: "#e63946", estilo: "coque" }
+];
+function criancaCorpo(k, livre) {
+  const c = CRIANCAS[((k % CRIANCAS.length) + CRIANCAS.length) % CRIANCAS.length];
+  const cab = {
+    curto: `<path d="M24 50C22 28 36 18 50 18C66 18 78 28 76 50C70 40 60 34 50 36C40 34 30 40 24 50Z" fill="${c.cabelo}"/>`,
+    chiquinhas: `<circle cx="20" cy="40" r="10" fill="${c.cabelo}"/><circle cx="80" cy="40" r="10" fill="${c.cabelo}"/><path d="M25 48C24 28 37 20 50 20C63 20 76 28 75 48C68 36 58 32 50 33C42 32 32 36 25 48Z" fill="${c.cabelo}"/><circle cx="27" cy="38" r="3" fill="#ff5d8f"/><circle cx="73" cy="38" r="3" fill="#ff5d8f"/>`,
+    black: `<path d="M18 52C10 34 22 12 50 12C78 12 90 34 82 52C80 40 72 36 66 36C60 30 40 30 34 36C28 36 20 40 18 52Z" fill="${c.cabelo}"/><circle cx="26" cy="26" r="9" fill="${c.cabelo}"/><circle cx="74" cy="26" r="9" fill="${c.cabelo}"/><circle cx="50" cy="14" r="10" fill="${c.cabelo}"/>`,
+    chanel: `<path d="M22 62C18 32 32 18 50 18C68 18 82 32 78 62L72 62C72 46 68 38 50 37C32 38 28 46 28 62Z" fill="${c.cabelo}"/>`,
+    espetado: `<path d="M24 48L26 30L32 36L36 20L44 30L50 16L56 30L64 20L68 36L74 30L76 48C68 38 32 38 24 48Z" fill="${c.cabelo}"/>`,
+    coque: `<circle cx="50" cy="16" r="10" fill="${c.cabelo}"/><path d="M24 50C22 30 36 22 50 22C64 22 78 30 76 50C70 40 60 36 50 37C40 36 30 40 24 50Z" fill="${c.cabelo}"/>`
+  }[c.estilo];
+  const rosto = livre
+    ? `<path d="M40 50Q43 46 46 50M54 50Q57 46 60 50" fill="none" stroke="${TINTA}" stroke-width="2.8" stroke-linecap="round"/><path d="M40 60Q50 72 60 60Z" fill="#7a2140"/><ellipse cx="50" cy="66" rx="4" ry="2.2" fill="#ff8fa3"/>`
+    : `<circle cx="43" cy="51" r="3.4" fill="${TINTA}"/><circle cx="57" cy="51" r="3.4" fill="${TINTA}"/><path d="M37 46L46 42.5M63 46L54 42.5" stroke="${TINTA}" stroke-width="2.2" stroke-linecap="round"/><ellipse cx="50" cy="63" rx="4" ry="5" fill="#7a2140"/>`;
+  return `<path d="M26 98C26 80 36 74 50 74C64 74 74 80 74 98Z" fill="${c.camisa}" stroke="${TINTA}" stroke-width="2"/>
+    ${livre ? `<path d="M30 82L16 62M70 82L84 62" stroke="${c.camisa}" stroke-width="9" stroke-linecap="round"/><circle cx="15" cy="60" r="5.5" fill="${c.pele}"/><circle cx="85" cy="60" r="5.5" fill="${c.pele}"/>` : ""}
+    <circle cx="50" cy="52" r="25" fill="${c.pele}" stroke="${TINTA}" stroke-width="2"/>${cab}
+    <circle cx="35" cy="59" r="4" fill="#ff8fb8" opacity=".5"/><circle cx="65" cy="59" r="4" fill="#ff8fb8" opacity=".5"/>${rosto}`;
+}
+const BOLHA = `<circle cx="50" cy="52" r="47" fill="url(#ac-bolha)" stroke="#8fd0ff" stroke-width="3"/><path d="M22 34Q30 18 48 14" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".85"/><circle cx="76" cy="76" r="4" fill="#fff" opacity=".7"/>`;
+const crianca = (k, livre, bolha, cls) => `<svg class="ac-crianca-svg${cls ? " " + cls : ""}" viewBox="-4 0 108 104" aria-hidden="true">${criancaCorpo(k, livre)}${bolha ? BOLHA : ""}</svg>`;
+const criancaEm = (k, x, y, w, livre, bolha) => `<svg x="${x}" y="${y}" width="${w}" height="${w}" viewBox="-4 0 108 104" overflow="visible">${criancaCorpo(k, livre)}${bolha ? BOLHA : ""}</svg>`;
+
+/* ---------- a Capitã de corpo inteiro (rosto do DiceBear + roupa nossa) ---------- */
+function rostoCapita(x, y, w) {
+  const n = ++nId;
+  const svg = (typeof ROSTO_CAPITA === "string" ? ROSTO_CAPITA : "").replace(/(id="|url\(#)([\w-]+)/g, (m, pre, nome) => pre + nome + "-acr" + n);
+  return svg.replace(/^<svg /, `<svg x="${x}" y="${y}" width="${w}" height="${w}" `);
+}
+// pose: "pe" (mãos na cintura), "forca" (braço para cima, maçã na mão), "voando" (deitada no ar)
+function capitaCorpo(pose) {
+  const roupa = "#b11f1f", capa = "#2a6fdb", luva = "#ffd23f", calca = "#22306b", bota = "#c81d25";
+  const estrela = `<path d="M100 176l5.6 11.4 12.6 1.8-9.1 8.9 2.2 12.5-11.3-5.9-11.3 5.9 2.2-12.5-9.1-8.9 12.6-1.8z" fill="url(#ac-ouro)" stroke="#b77d00" stroke-width="2" stroke-linejoin="round"/>`;
+  const bracoCima = pose === "forca";
+  const bracos = bracoCima
+    ? `<path d="M140 166C156 150 160 128 158 106" fill="none" stroke="${roupa}" stroke-width="15" stroke-linecap="round"/><circle cx="158" cy="100" r="11" fill="${luva}" stroke="#c99a00" stroke-width="2.4"/>
+       ${macaEm(138, 56, 40)}
+       <path d="M60 166C46 178 44 196 56 208" fill="none" stroke="${roupa}" stroke-width="15" stroke-linecap="round"/><circle cx="60" cy="210" r="11" fill="${luva}" stroke="#c99a00" stroke-width="2.4"/>`
+    : `<path d="M60 166C42 180 42 198 60 210" fill="none" stroke="${roupa}" stroke-width="15" stroke-linecap="round"/><circle cx="62" cy="211" r="11" fill="${luva}" stroke="#c99a00" stroke-width="2.4"/>
+       <path d="M140 166C158 180 158 198 140 210" fill="none" stroke="${roupa}" stroke-width="15" stroke-linecap="round"/><circle cx="138" cy="211" r="11" fill="${luva}" stroke="#c99a00" stroke-width="2.4"/>`;
+  return `<path d="M58 160C26 196 20 250 28 292L172 292C180 250 174 196 142 160Z" fill="${capa}" stroke="#173f86" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M58 160C26 196 20 250 28 292L172 292C180 250 174 196 142 160Z" fill="url(#ac-reticula-clara)"/>
+    <path d="M80 236L76 278M120 236L124 278" stroke="${calca}" stroke-width="22" stroke-linecap="round"/>
+    <path d="M62 272h28v14c0 6-4 8-10 8H58c-6 0-6-8 4-10z M138 272h-28v14c0 6 4 8 10 8h22c6 0 6-8-4-10z" fill="${bota}" stroke="#7a1010" stroke-width="2.4" stroke-linejoin="round"/>
+    <path d="M58 158Q100 146 142 158L138 238Q100 248 62 238Z" fill="${roupa}" stroke="#7a1010" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M58 158Q100 146 142 158L138 238Q100 248 62 238Z" fill="url(#ac-reticula-clara)"/>
+    <path d="M62 226Q100 236 138 226L138 238Q100 248 62 238Z" fill="${luva}" stroke="#c99a00" stroke-width="2"/>
+    ${estrela}${bracos}${rostoCapita(20, 0, 160)}`;
+}
+const capita = (pose, cls) => `<svg class="ac-capita-svg${cls ? " " + cls : ""}" viewBox="0 -4 200 300" aria-hidden="true">${capitaCorpo(pose)}</svg>`;
+const capitaEm = (pose, x, y, w, extra) => `<svg x="${x}" y="${y}" width="${w}" height="${w * 1.5}" viewBox="0 -4 200 300" overflow="visible"${extra || ""}>${capitaCorpo(pose)}</svg>`;
+
+/* ---------- cenários e quadros da história (400 × 250) ---------- */
+const nuvem = (x, y, s) => `<g transform="translate(${x} ${y}) scale(${s})" fill="#fff" opacity=".92"><ellipse cx="0" cy="0" rx="28" ry="14"/><ellipse cx="-18" cy="4" rx="16" ry="10"/><ellipse cx="20" cy="4" rx="18" ry="11"/><ellipse cx="4" cy="-8" rx="16" ry="12"/></g>`;
+const estrelinha = (x, y, r, cor) => { const p = []; for (let k = 0; k < 10; k++) { const a = -Math.PI / 2 + k * Math.PI / 5, q = k % 2 ? r * 0.45 : r; p.push((x + Math.cos(a) * q).toFixed(1) + "," + (y + Math.sin(a) * q).toFixed(1)); } return `<polygon points="${p.join(" ")}" fill="${cor || "#ffd23f"}" stroke="#c98a00" stroke-width="1"/>`; };
+const ceu = (tipo) => `<rect width="400" height="250" fill="url(#ac-${tipo || "ceu"})"/><rect width="400" height="250" fill="url(#ac-reticula${tipo === "noite" ? "-clara" : ""})"/>`;
+const chao = (cor) => `<path d="M0 214Q100 200 200 210T400 206V250H0Z" fill="${cor || "#7ccf5f"}"/><path d="M0 214Q100 200 200 210T400 206V250H0Z" fill="url(#ac-reticula)"/>`;
+const cena = (miolo, cls) => `<svg class="hq-svg${cls ? " " + cls : ""}" viewBox="0 0 400 250" preserveAspectRatio="xMidYMid slice" aria-hidden="true">${miolo}</svg>`;
+function predio() {
+  let janelas = "";
+  for (let k = 0; k < 10; k++) {
+    const x = 128 + (k % 5) * 30, y = 118 + Math.floor(k / 5) * 34;
+    janelas += `<rect x="${x}" y="${y}" width="22" height="24" rx="4" fill="#fff6c9" stroke="#8a5a2b" stroke-width="2"/><text x="${x + 11}" y="${y + 18}" text-anchor="middle" font-family="'Baloo 2', sans-serif" font-weight="800" font-size="15" fill="#c2407f">${k + 1}</text>`;
+  }
+  return `<path d="M110 100L200 52L290 100Z" fill="#e85d5d" stroke="#8a2a2a" stroke-width="3" stroke-linejoin="round"/>
+    <rect x="114" y="100" width="172" height="112" fill="#ffd9a0" stroke="#8a5a2b" stroke-width="3"/><rect x="114" y="100" width="172" height="112" fill="url(#ac-reticula)"/>
+    <rect x="134" y="84" width="132" height="16" rx="5" fill="#fff" stroke="#8a5a2b" stroke-width="2"/>
+    <text x="200" y="96" text-anchor="middle" font-family="'Baloo 2', sans-serif" font-weight="800" font-size="10.5" fill="#2b3a55">ACADEMIA DOS NÚMEROS</text>
+    ${janelas}<rect x="188" y="186" width="24" height="26" rx="10" fill="#8a5a2b"/>`;
+}
+function torre() {
+  return `<rect x="150" y="70" width="100" height="150" fill="url(#ac-pedra)" stroke="#4a3a7a" stroke-width="3"/>
+    <path d="M150 70V58h14v12h14V58h16v12h14V58h14v12h14V58h14v12" fill="url(#ac-pedra)" stroke="#4a3a7a" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M160 100h22M196 120h28M164 150h18M206 170h26M170 196h24" stroke="#4a3a7a" stroke-width="2" opacity=".5"/>
+    <path d="M186 132a14 14 0 0 1 28 0v24h-28z" fill="#ffe27a" stroke="#4a3a7a" stroke-width="3"/>`;
+}
+const CENAS = {
+  academia: () => cena(ceu() + nuvem(60, 40, 1) + nuvem(330, 70, .8) + chao() + predio()
+    + criancaEm(0, 96, 168, 36, true) + criancaEm(3, 268, 170, 34, true) + criancaEm(1, 300, 176, 30, true)
+    + bruxaVoando(10, 250, 6, 70) + bruxaVoando(8, 312, 52, 46) + bruxaVoando(4, 344, 18, 34) + bruxaVoando(2, 66, 64, 32, true)),
+  bolhas: () => cena(ceu("noite") + estrelinha(40, 30, 5, "#fff6b8") + estrelinha(360, 22, 4, "#fff6b8") + estrelinha(300, 60, 3, "#fff6b8") + chao("#5f8a6a") + torre()
+    + bruxaEm(10, "rindo", 172, 92, 56)
+    + [[40, 110], [96, 70], [270, 76], [320, 120], [70, 160], [300, 168]].map(([x, y], k) => criancaEm(k, x, y, 54, false, true)).join("")),
+  chegada: () => cena(ceu() + nuvem(80, 200, 1.4) + nuvem(320, 210, 1.2)
+    + `<g opacity=".8" stroke="#fff" stroke-width="6" stroke-linecap="round"><path d="M40 80L130 120M30 120L120 150M50 160L120 180"/></g>`
+    + estrelinha(110, 150, 8) + estrelinha(70, 120, 6) + estrelinha(90, 190, 5)
+    + `<g transform="rotate(-62 250 130)">${capitaEm("forca", 190, 30, 120)}</g>`),
+  poder: () => cena(ceu("por") + chao("#f2b36b")
+    + `<circle cx="214" cy="96" r="70" fill="url(#ac-maca-ouro)"/>`
+    + macaEm(40, 120, 46) + macaEm(320, 110, 50) + macaEm(80, 60, 34) + macaEm(300, 40, 30)
+    + capitaEm("forca", 150, 40, 128)),
+  regra: (n) => {
+    let macas = "";
+    const por = n <= 4 ? n : Math.ceil(n / 2), lado = n <= 4 ? 44 : 32;
+    for (let k = 0; k < n; k++) macas += macaEm((n <= 4 ? 222 : 206) + (k % por) * (lado + 4), (n <= 4 ? 108 : 78) + Math.floor(k / por) * (lado + 10), lado);
+    return cena(ceu() + chao() + bruxaEm(n, "brava", 34, 64, 116)
+      + `<text x="190" y="152" text-anchor="middle" font-family="'Baloo 2', sans-serif" font-weight="800" font-size="62" fill="#2b3a55">=</text>` + macas);
+  },
+  derrotada: (n) => cena(ceu("por") + chao("#f2b36b")
+    + `<g class="hq-gira">${bruxaEm(n, "derrotada", 220, 70, 120)}</g>` + capitaEm("forca", 30, 44, 118)
+    + `<path d="M150 120L210 130M150 140L214 150M152 100L206 112" stroke="#ffd23f" stroke-width="8" stroke-linecap="round"/>`),
+  irma: (n, m) => cena(ceu("noite") + estrelinha(30, 26, 5, "#fff6b8") + estrelinha(370, 40, 4, "#fff6b8") + `<circle cx="300" cy="66" r="42" fill="#fff4c2" opacity=".9"/>` + chao("#5f8a6a")
+    + bruxaEm(n, "derrotada", 30, 130, 64) + bruxaEm(m, "rindo", 186, 30, 150)),
+  livres: () => {
+    let conf = "";
+    const cores = ["#e63946", "#ffd23f", "#2a6fdb", "#6fbf5a", "#ff7eb6", "#8a6fd1"];
+    for (let k = 0; k < 34; k++) conf += `<rect x="${(k * 53) % 400}" y="${(k * 37) % 150}" width="7" height="12" rx="2" fill="${cores[k % 6]}" transform="rotate(${(k * 41) % 360} ${(k * 53) % 400 + 3} ${(k * 37) % 150 + 6})"/>`;
+    return cena(ceu() + `<path d="M20 230A180 180 0 0 1 380 230" fill="none" stroke="#ff8a8a" stroke-width="12" opacity=".6"/><path d="M36 230A164 164 0 0 1 364 230" fill="none" stroke="#ffd23f" stroke-width="12" opacity=".6"/><path d="M52 230A148 148 0 0 1 348 230" fill="none" stroke="#6fbf5a" stroke-width="12" opacity=".6"/>`
+      + chao() + conf + capitaEm("forca", 150, 52, 104)
+      + [[20, 150], [76, 162], [262, 160], [320, 150], [120, 182], [228, 184]].map(([x, y], k) => criancaEm(k, x, y, 58, true)).join(""));
+  },
+  irmas: () => cena(ceu("por") + chao("#f2b36b") + IRMAS.map((n, k) => bruxaEm(n, "feliz", 4 + k * 74, 96 - k * 11, 60 + k * 7)).join("")
+    + macaEm(60, 200, 26) + macaEm(330, 200, 26)),
+  juntos: () => {
+    let bandeirolas = `<path d="M10 26Q200 66 390 26" fill="none" stroke="#8a5a2b" stroke-width="2"/>`;
+    for (let k = 0; k < 10; k++) {
+      const x = 26 + k * 38, y = 30 + Math.sin((k + 0.5) / 10 * Math.PI) * 18;
+      bandeirolas += `<path d="M${x - 14} ${y}H${x + 14}L${x} ${y + 30}Z" fill="${["#e63946", "#ffd23f", "#2a6fdb", "#6fbf5a", "#ff7eb6"][k % 5]}" stroke="#2b3a55" stroke-width="1.5"/><text x="${x}" y="${y + 16}" text-anchor="middle" font-family="'Baloo 2', sans-serif" font-weight="800" font-size="15" fill="#fff" stroke="#2b3a55" stroke-width=".8" paint-order="stroke">${k + 1}</text>`;
+    }
+    return cena(ceu() + chao() + bandeirolas + bruxaEm(10, "feliz", 296, 92, 80) + bruxaEm(2, "feliz", 8, 120, 60)
+      + capitaEm("pe", 150, 82, 94) + [[70, 168], [110, 176], [250, 174], [92, 196]].map(([x, y], k) => criancaEm(k + 1, x, y, 48, true)).join(""));
+  }
+};
+
+/* ---------- capa do evento (tela inicial) e retratos do mapa ---------- */
+function capa() {
+  return `<svg viewBox="0 0 320 160" aria-hidden="true">
+    <rect width="320" height="160" rx="18" fill="#ffd23f"/><rect width="320" height="160" rx="18" fill="url(#ac-reticula)"/>
+    <path d="M160 80L320 30V130Z M160 80L250 0H320Z M160 80L0 20V140Z M160 80L70 160H0Z" fill="#ffb347" opacity=".55"/>
+    ${bruxaEm(4, "rindo", 206, 6, 92)}${capitaEm("forca", 30, 4, 98)}
+    ${macaEm(126, 92, 34)}${macaEm(154, 108, 30)}${macaEm(180, 92, 26)}</svg>`;
+}
+function retrato(n, estado) {
+  if (estado === "trancado") return `<svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="56" fill="#cfc6e4" stroke="#7a68a6" stroke-width="4"/>
+    <g opacity=".35" transform="translate(14 4) scale(.46)">${bruxaCorpo(n, "rindo").replace(/fill="(?!none|url)[^"]*"/g, 'fill="#4a3a7a"')}</g>
+    <text x="60" y="76" text-anchor="middle" font-family="'Baloo 2', sans-serif" font-weight="800" font-size="46" fill="#4a3a7a">?</text></svg>`;
+  return `<svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="56" fill="${estado === "vencido" ? "#c8f0c0" : "#fff3c4"}" stroke="${COR[n].chapeuEsc}" stroke-width="4"/>
+    <svg x="4" y="-6" width="112" height="151" viewBox="0 0 200 270">${bruxaCorpo(n, estado === "vencido" ? "derrotada" : "rindo")}</svg></svg>`;
+}
+// topo do mapa: as crianças presas (ou livres, no fim)
+function topo(livres, total) {
+  let s = "";
+  for (let k = 0; k < 6; k++) s += criancaEm(k, 10 + k * 62, livres ? 8 : 4 + (k % 2) * 10, 56, livres, !livres);
+  return `<svg viewBox="0 0 390 80" aria-hidden="true">${s}</svg>`;
+}
+
+return { IRMAS, COR, instalar, maca, macaEm, bruxa, bruxaEm, bruxaCorpo, crianca, criancaEm, capita, capitaEm, CENAS, capa, retrato, topo, estrelinha };
+})();
+</script>
+<script>
+/* ===== Evento "Academia dos Números" (outubro de 2026) =====
+   Para quê: contar de 1 até 10 sem pular números (a Diana, 4 anos, já sabe os números, mas pula alguns ao contar).
+   História: a Bruxa dos Números pegou as crianças que ainda não sabiam contar; a Capitã Estrela vai salvá-las. O poder
+   dela vem das maçãs mágicas: para derrotar uma bruxa, ela come as maçãs do número que a bruxa veste.
+   5 níveis = 5 irmãs: Bruxa 2, 4, 6, 8 e 10 (cada uma é a irmã mais velha da anterior). Em cada nível as fases ficam
+   mais difíceis e todas contam até o número daquela bruxa:
+     🍎 comer guiado: uma maçã por vez, da esquerda para a direita; o número aparece no pratinho e no fim a Capitã
+        reconta tudo; 👗 o número da bruxa (ver o número no vestido e achar o cartão); 🔎 cadê a Bruxa N (ouvir o número
+        e achar a bruxa); 🎈 contar na ordem (balões de 1 a N); 🕳️ o número que falta (a bruxa roubou um da trilha);
+     🔢 quantas maçãs (contar espalhadas, cada uma uma vez só); 🧺 encher a cesta (pôr N e parar no N);
+     ⚡ a fase da bruxa: comer N maçãs, estourar as bolhas das crianças e conhecer a irmã mais velha.
+   Na última: "Quantas maçãs mágicas é preciso para derrotar a Bruxa 10?", com as 10 maçãs na tela; depois as crianças
+   ficam livres, as irmãs aprendem a contar também e a Diana ganha o diploma de Heroína dos Números.
+   Contar: um toque = um número, sempre na ordem (a voz fala o número certo); ela ouve, repete e não pula.
+   Tudo o que a criança precisa ouvir é voz gravada (a Capitã e cada bruxa têm a sua): vozes.js, feito por gerar_vozes.py
+   a partir de todasAsFalas(). Desenhos: desenhos.js. Estilo: academia.css. */
+const Academia = (() => {
+const D = AcademiaDesenhos, C = "capita", ID = "academia", PAC = "ev-academia";
+const IRMAS = D.IRMAS;
+const bq = (n) => "bruxa" + n;
+
+/* ---------- tudo o que é falado (Brasil, Portugal) ---------- */
+const F = {
+  titulo: "Academia dos Números",
+  boasVindas: "Bem-vinda à Academia dos Números!",
+  escolha: "Vamos salvar as crianças?",
+  trancada: ["Essa ainda está trancada! Primeiro a outra.", "Essa ainda está fechada! Primeiro a outra."],
+  nivelTrancado: "Primeiro a irmã mais nova!",
+  faseCompleta: ["Fase completa! Vamos para a próxima?", "Fase completa! Vamos à próxima?"],
+  nivelCompleto: (n) => ["Você derrotou a Bruxa " + n + "!", "Derrotaste a Bruxa " + n + "!"],
+  completo: ["Você salvou todas as crianças!", "Salvaste as crianças todas!"],
+  nivel: (n) => ["Bruxa " + n + "! Para derrotar ela, eu preciso de " + n + " maçãs!", "Bruxa " + n + "! Para a derrotar, preciso de " + n + " maçãs!"],
+  // a história
+  hq1: ["A Bruxa dos Números pegou as crianças que ainda não sabiam contar!", "A Bruxa dos Números levou as crianças que ainda não sabiam contar!"],
+  risada: "Rá, rá, rá!",
+  hq2: ["Quem pula números fica nas minhas bolhas!", "Quem salta números fica nas minhas bolhas!"],
+  hq3: ["Eu sou a Capitã Estrela! Vou salvar as crianças!", "Sou a Capitã Estrela! Vou salvar as crianças!"],
+  hq4: "O meu poder vem das maçãs mágicas!",
+  hq4b: ["Para derrotar uma bruxa, eu como as maçãs do número dela!", "Para derrotar uma bruxa, como as maçãs do número dela!"],
+  hq5: ["A primeira é a Bruxa 2: 2 maçãs! Você me ajuda a contar?", "A primeira é a Bruxa 2: 2 maçãs! Ajudas-me a contar?"],
+  // as fases
+  comerPede: (n) => ["Me ajuda a comer " + n + " maçãs! Toca em cada uma e conta comigo.", "Ajuda-me a comer " + n + " maçãs! Toca em cada uma e conta comigo."],
+  primeiroBrilha: ["Primeiro a que está brilhando!", "Primeiro a que está a brilhar!"],
+  delicia: (n) => n + " maçãs! Que delícia!",
+  bruxaChefe: (n) => n === 10 ? ["Rá, rá! Eu sou a Bruxa 10, a mais velha de todas!", "Rá, rá! Sou a Bruxa 10, a mais velha de todas!"]
+    : ["Rá, rá! Eu sou a Bruxa " + n + "! Ninguém me derrota!", "Rá, rá! Sou a Bruxa " + n + "! Ninguém me derrota!"],
+  chefePede: (n) => "Vamos comer " + n + " maçãs e derrotar a Bruxa " + n + "! Conta comigo!",
+  poder: "Poder das maçãs mágicas!",
+  derrotada: "Aaai! Fui derrotada!",
+  conseguimos: "Conseguimos!",
+  bolhasPede: ["Estoura as bolhas para soltar as crianças! Conta comigo!", "Rebenta as bolhas para soltar as crianças! Conta comigo!"],
+  salvas: (n) => n + " crianças salvas!",
+  irmaLegenda: (n) => ["A Bruxa " + n + " foi derrotada... mas ela tem uma irmã mais velha!", "A Bruxa " + n + " foi derrotada... mas tem uma irmã mais velha!"],
+  irmaBalao: (m) => ["Rá, rá! Eu sou a Bruxa " + m + "! Para me derrotar, precisa de " + m + " maçãs!", "Rá, rá! Sou a Bruxa " + m + "! Para me derrotar, são precisas " + m + " maçãs!"],
+  irmaCapita: (m) => [m + " maçãs? A gente consegue!", "São " + m + " maçãs? Nós conseguimos!"],
+  numeroPede: ["Qual é o número da Bruxa? Olha no vestido dela!", "Qual é o número da Bruxa? Olha para o vestido dela!"],
+  ehBruxa: (n) => ["Isso! É a Bruxa " + n + "!", "Boa! É a Bruxa " + n + "!"],
+  cadePede: (n) => ["Cadê a Bruxa " + n + "? Toca nela!", "Onde está a Bruxa " + n + "? Toca nela!"],
+  souBruxa: (k) => ["Eu sou a Bruxa " + k + "!", "Sou a Bruxa " + k + "!"],
+  quantasPede: ["Quantas maçãs tem aqui? Toca em cada uma e conta comigo!", "Quantas maçãs há aqui? Toca em cada uma e conta comigo!"],
+  quantasSao: "E agora: quantas são?",
+  saoN: (n) => ["Isso! São " + n + " maçãs!", "Boa! São " + n + " maçãs!"],
+  deNovo: ["Vamos contar de novo, devagarinho!", "Vamos contar outra vez, devagarinho!"],
+  finalPede: ["Quantas maçãs mágicas é preciso para derrotar a Bruxa 10? Vamos contar!", "Quantas maçãs mágicas são precisas para derrotar a Bruxa 10? Vamos contar!"],
+  dezMacas: ["Isso! 10 maçãs mágicas!", "Boa! 10 maçãs mágicas!"],
+  faltaPede: ["A Bruxa roubou um número! Qual número falta?", "A Bruxa roubou um número! Que número falta?"],
+  naoFalta: ["Isso! Agora não falta nenhum!", "Boa! Agora não falta nenhum!"],
+  ordemPede: ["Vamos contar na ordem! Começa no 1.", "Vamos contar por ordem! Começa no 1."],
+  esseNao: ["Esse não! Qual vem agora?", "Esse não! Qual vem a seguir?"],
+  ordemFim: ["Isso! Contou tudo na ordem!", "Boa! Contaste tudo por ordem!"],
+  cestaPede: (n) => ["Pega " + n + " maçãs para mim! Põe na cesta e conta.", "Apanha " + n + " maçãs para mim! Põe no cesto e conta."],
+  demais: ["Opa! Tem maçã demais. Tira uma!", "Ups! Há maçãs a mais. Tira uma!"],
+  aindaFalta: "Ainda falta! Põe mais.",
+  cestaCerta: (n) => ["Isso! " + n + " maçãs na cesta!", "Boa! " + n + " maçãs no cesto!"],
+  fim1: ["Conseguimos! Todas as crianças estão livres!", "Conseguimos! As crianças estão todas livres!"],
+  fim2: ["Desculpa! A gente só queria aprender a contar também!", "Desculpem! Nós só queríamos aprender a contar também!"],
+  fim3: ["Agora todo mundo conta junto: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10!", "Agora contamos todos juntos: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10!"],
+  diploma: ["Você contou até 10! Agora você é Heroína dos Números!", "Contaste até 10! Agora és Heroína dos Números!"]
+};
+// a lista de tudo o que precisa de voz gravada: [quem, texto, pacote]. Pacotes pequenos: o da Capitã para o mapa e as
+// frases de todas as fases ("ev-academia") e um por nível com as frases daquele número ("ev-academia-b4"...); cada
+// bruxa tem o seu. O teste (testar_evento.py) joga todas as fases e confere que nenhuma fala ficou sem gravação.
+const pacNivel = (n) => PAC + "-b" + n;
+function todasAsFalas() {
+  const L = [], add = (q, t, pac) => L.push([q, t, pac || PAC]), c = (t, pac) => add(C, t, pac);
+  [F.boasVindas, F.escolha, F.trancada, F.nivelTrancado, F.faseCompleta, F.primeiroBrilha, F.poder, F.conseguimos, F.bolhasPede, F.numeroPede,
+    F.quantasPede, F.quantasSao, F.deNovo, F.faltaPede, F.naoFalta, F.ordemPede, F.esseNao, F.ordemFim, F.demais, F.aindaFalta].forEach((t) => c(t));
+  [F.hq1, F.hq3, F.hq4, F.hq4b, F.hq5].forEach((t) => c(t, pacNivel(2)));
+  [F.completo, F.finalPede, F.dezMacas, F.fim1, F.fim3, F.diploma].forEach((t) => c(t, pacNivel(10)));
+  IRMAS.forEach((n) => {
+    c(F.nivel(n));
+    [F.comerPede(n), F.delicia(n), F.salvas(n), F.ehBruxa(n)].forEach((t) => c(t, pacNivel(n)));
+    add(bq(n), F.derrotada); add(bq(n), F.bruxaChefe(n));
+  });
+  [2, 4, 6, 8].forEach((n) => [F.nivelCompleto(n), F.chefePede(n), F.irmaLegenda(n), F.saoN(n), F.irmaCapita(n + 2)].forEach((t) => c(t, pacNivel(n))));
+  [4, 6, 8, 10].forEach((m) => { add(bq(m), F.irmaBalao(m)); add(bq(m), F.souBruxa(m)); });
+  [8, 10].forEach((n) => c(F.cadePede(n), pacNivel(n)));
+  [6, 8, 10].forEach((n) => { c(F.cestaPede(n), pacNivel(n)); c(F.cestaCerta(n), pacNivel(n)); });
+  add(bq(10), F.risada); add(bq(10), F.hq2); add(bq(10), F.fim2);
+  return L;
+}
+
+/* ---------- pedacinhos comuns das rodadas ---------- */
+let ultimoAc = null;
+function somAc(tipo) {
+  try {
+    const a = ctxAudio();
+    if (a.state === "suspended") a.resume();
+    const t0 = a.currentTime + 0.01, out = a.destination;
+    const ruido = (dur, freq, q, ganho, quando) => {
+      const n = Math.max(1, Math.floor(a.sampleRate * dur)), buf = a.createBuffer(1, n, a.sampleRate), x = buf.getChannelData(0);
+      for (let k = 0; k < n; k++) x[k] = (Math.random() * 2 - 1) * Math.pow(1 - k / n, 2.2);
+      const s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
+      s.buffer = buf; f.type = "bandpass"; f.frequency.value = freq; f.Q.value = q; g.gain.value = ganho;
+      s.connect(f).connect(g).connect(out); s.start(quando);
+    };
+    const tom = (f1, f2, dur, ganho, quando, tipoOnda) => {
+      const o = a.createOscillator(), g = a.createGain();
+      o.type = tipoOnda || "sine"; o.frequency.setValueAtTime(f1, quando); o.frequency.exponentialRampToValueAtTime(f2, quando + dur);
+      g.gain.setValueAtTime(ganho, quando); g.gain.exponentialRampToValueAtTime(0.001, quando + dur);
+      o.connect(g).connect(out); o.start(quando); o.stop(quando + dur + 0.02);
+    };
+    if (tipo === "nhac") { ruido(0.07, 1900, 1.3, 0.55, t0); ruido(0.06, 2400, 1.5, 0.4, t0 + 0.1); }
+    else if (tipo === "pop") { tom(950, 260, 0.14, 0.32, t0); ruido(0.03, 3000, 0.8, 0.2, t0); }
+    else if (tipo === "pow") { ruido(0.3, 500, 0.6, 0.7, t0); tom(220, 55, 0.35, 0.35, t0, "triangle"); }
+    else if (tipo === "magia") [784, 988, 1175, 1568].forEach((f, k) => tom(f, f * 1.01, 0.22, 0.12, t0 + k * 0.07, "triangle"));
+  } catch (e) {}
+}
+// espera a voz terminar (sem voz, segue logo)
+function aoCalar(fn, minimo) {
+  const t0 = Date.now();
+  const passo = (n) => { if ((falando() && n < 90) || Date.now() - t0 < (minimo || 0)) return depois(() => passo(n + 1), 120); fn(); };
+  depois(() => passo(0), 60);
+}
+// o cabeçalho: a Capitã e a pergunta (com falas antes, como a risada da bruxa)
+function cabeca(t, antes) {
+  const box = el("div", "fala");
+  box.append(avatar(C, null, true), elT("h2", "pergunta", t));
+  instrucao = { t, quem: C };
+  depois(() => { (antes || []).forEach((f, k) => falar(f.t, f.quem, k > 0)); falar(t, C, !!(antes && antes.length)); }, 350);
+  return box;
+}
+// erro gentil, sem cortar o número que acabou de ser falado
+function erro(recado, b, msg) {
+  if (travado) return;
+  if (b) { b.classList.remove("quase"); void b.offsetWidth; b.classList.add("quase"); }
+  dizer(recado, "ops", msg || sorteia(QUASE), true, 200); som("quase");
+  tentativas++;
+  if (tentativas >= 2 && dicaAtual) dicaAtual();
+}
+const certo = (recado, r, b, elogio) => acertou(recado, { ...r, elogio }, b, true);
+const numero = (k) => falar(k + "!", C);
+// contar em voz alta, apontando: cada elemento acende quando o número dele é falado. Devolve como parar no meio.
+function contaJunto(els, fim, passo) {
+  passo = passo || 760;
+  const ids = els.map((e, k) => depois(() => { els.forEach((x) => x.classList.remove("contando")); e.classList.add("contando", "contado"); numero(k + 1); }, k * passo));
+  ids.push(depois(() => { els.forEach((x) => x.classList.remove("contando")); if (fim) fim(); }, els.length * passo + 250));
+  return () => { ids.forEach(clearTimeout); els.forEach((x) => x.classList.remove("contando")); };
+}
+function cartaoNumero(n) {
+  const b = el("button", "cartao ac-num");
+  b.type = "button"; b.setAttribute("aria-label", String(n)); b.dataset.n = n;
+  const pts = el("span", "pontinhos");
+  for (let k = 0; k < n; k++) pts.append(document.createElement("i"));
+  b.append(el("span", "numero", String(n)), pts);
+  return b;
+}
+function bruxaEl(n, humor, fala) {
+  const s = el("span", "ac-bruxa b" + n + (fala ? " avatar" : ""));
+  s.innerHTML = D.bruxa(n, humor);
+  if (fala) { s.dataset.fala = bq(n); s.title = "Clique para ouvir de novo"; }
+  s.setAttribute("role", "img"); s.setAttribute("aria-label", "Bruxa " + n);
+  return s;
+}
+function macaBtn(cls) {
+  const b = el("button", "ac-maca" + (cls ? " " + cls : ""));
+  b.type = "button"; b.setAttribute("aria-label", "maçã");
+  b.innerHTML = D.maca();
+  return b;
+}
+// a Capitã "come": a maçã voa até a boca dela, a cabeça dá um pulinho e aparece o NHAC!
+function comer(maca, boca, fim) {
+  maca.classList.add("comendo");
+  voaItem(maca.querySelector("svg") || maca, boca, () => {
+    somAc("nhac");
+    if (boca) {
+      boca.classList.remove("nhac"); void boca.offsetWidth; boca.classList.add("nhac");
+      const s = el("span", "ac-nhac", "NHAC!"); boca.append(s); setTimeout(() => s.remove(), 800);
+    }
+    if (fim) fim();
+  });
+  maca.classList.add("comida");
+}
+// posições espalhadas (em %), numa grade com um pouco de bagunça, sem encostar uma na outra
+function espalha(n, cols, linhas, evita) {
+  const celulas = [];
+  for (let l = 0; l < linhas; l++) for (let c = 0; c < cols; c++) if (!(evita && evita(c, l))) celulas.push([c, l]);
+  return embaralha(celulas).slice(0, n).sort((a, b) => a[1] - b[1] || a[0] - b[0]).map(([c, l]) => {
+    const jx = (Math.random() - 0.5) * 0.34, jy = (Math.random() - 0.5) * 0.3;
+    return [((c + 0.5 + jx) / cols) * 100, ((l + 0.5 + jy) / linhas) * 100];
+  });
+}
+function balaoSVG(k) {
+  const cores = ["#e63946", "#ff9f1c", "#ffd23f", "#6fbf5a", "#2a9df4", "#8a6fd1", "#ff7eb6", "#2ec4b6", "#f4845f", "#5e60ce"], c = cores[(k - 1) % cores.length];
+  return `<svg viewBox="0 0 80 120" aria-hidden="true"><path d="M40 86Q36 100 44 112" fill="none" stroke="#6b6b80" stroke-width="2"/>
+    <ellipse cx="40" cy="44" rx="34" ry="40" fill="${c}" stroke="rgba(43,58,85,.45)" stroke-width="3"/><ellipse cx="40" cy="44" rx="34" ry="40" fill="url(#ac-reticula-clara)"/>
+    <path d="M35 84h10l-5 7z" fill="${c}" stroke="rgba(43,58,85,.45)" stroke-width="2" stroke-linejoin="round"/>
+    <ellipse cx="27" cy="27" rx="7" ry="11" fill="#fff" opacity=".45" transform="rotate(-24 27 27)"/>
+    <text x="40" y="${k > 9 ? 57 : 59}" text-anchor="middle" font-family="'Baloo 2', sans-serif" font-weight="800" font-size="${k > 9 ? 34 : 40}" fill="#fff" stroke="#2b3a55" stroke-width="2.5" paint-order="stroke">${k}</text></svg>`;
+}
+const dicaDe = (t) => el("p", "dica-pai", t);
+// maçã maior quando há poucas na tela
+const TAM = { 2: [12, 150], 3: [11, 140], 4: [10.5, 130], 5: [10, 120], 6: [9.4, 112], 7: [9, 104], 8: [8.6, 98], 9: [8.2, 92], 10: [7.8, 88] };
+function tamanho(t, n) { const [vw, px] = TAM[Math.max(2, Math.min(10, n))]; t.style.setProperty("--maca", `clamp(48px, ${vw}vw, ${px}px)`); }
+const ARVORE = `<svg class="ac-arvore-fundo" viewBox="0 0 300 260" aria-hidden="true" preserveAspectRatio="none"><path d="M136 150h28l8 106h-44z" fill="#9a6232" stroke="#5e3a1a" stroke-width="4"/><path d="M150 14C206 10 262 46 270 98C280 160 220 180 150 176C80 180 20 160 30 98C38 46 94 10 150 14Z" fill="#5fb84a" stroke="#2f7d32" stroke-width="5"/><path d="M150 14C206 10 262 46 270 98C280 160 220 180 150 176C80 180 20 160 30 98C38 46 94 10 150 14Z" fill="url(#ac-reticula)"/><path d="M70 60q20-14 40-6M190 50q24-6 40 10M90 130q30 10 60 0" fill="none" stroke="#3f9e3a" stroke-width="4" stroke-linecap="round" opacity=".6"/></svg>`;
+const naCopa = ([x, y]) => [12 + x * 0.76, 8 + y * 0.54];
+
+/* ---------- 🍎 comer (guiado: uma por vez, na ordem; ou a fase da bruxa: ela assiste e perde a força) ---------- */
+telas["ac-comer"] = function (r) {
+  const n = r.n, chefe = !!r.chefe;
+  const t = novaTela("ac ac-comer" + (chefe ? " chefe" : " guiado"));
+  tamanho(t, chefe ? n + 2 : Math.min(n, 5));
+  const recado = el("p", "recado");
+  const cab = cabeca(chefe ? F.chefePede(n) : F.comerPede(n), chefe ? [{ quem: bq(n), t: F.bruxaChefe(n) }] : null);
+  const boca = cab.querySelector(".avatar");
+  let comidas = 0, acabou = false;
+  if (!chefe) {
+    // a trilha: cada maçã em cima do seu pratinho; o pratinho ganha o número quando ela come
+    const trilha = el("div", "ac-trilha-macas");
+    trilha.style.setProperty("--cols", n <= 5 ? n : Math.ceil(n / 2));
+    const casas = [];
+    for (let k = 0; k < n; k++) {
+      const casa = el("div", "ac-casa"), m = macaBtn(), prato = el("span", "ac-prato");
+      casa.append(m, prato); casas.push({ casa, m, prato }); trilha.append(casa);
+      m.addEventListener("click", () => {
+        if (acabou || travado || m.classList.contains("comida")) return;
+        if (k !== comidas) { m.classList.remove("quase"); void m.offsetWidth; m.classList.add("quase"); return dizer(recado, "ops", F.primeiroBrilha); }
+        comidas++;
+        const num = comidas;
+        m.classList.remove("proxima");
+        comer(m, boca);
+        prato.textContent = String(num); prato.classList.add("cheio");
+        numero(num); recado.textContent = ""; tentativas = 0;
+        if (casas[num]) casas[num].m.classList.add("proxima");
+        if (num === n) {
+          acabou = true;
+          depois(() => contaJunto(casas.map((x) => x.prato), () => certo(recado, r, null, F.delicia(n))), 900);
+        }
+      });
+    }
+    casas[0].m.classList.add("proxima");
+    dicaAtual = null;
+    t.append(cab, trilha, recado, dicaDe("Pai: ela toca na maçã que brilha (ou aponta e você toca) e fala o número junto com a Capitã. Um toque, um número: é assim que ela para de pular."));
+    return;
+  }
+  // a fase da bruxa
+  const arena = el("div", "ac-arena");
+  const bruxa = bruxaEl(n, "rindo", true);
+  const pomar = el("div", "ac-pomar");
+  pomar.innerHTML = ARVORE;
+  const pos = espalha(n, n <= 4 ? 3 : n <= 6 ? 3 : 4, n <= 4 ? 2 : n <= 6 ? 3 : 3).map(naCopa);
+  const medidor = el("div", "ac-medidor");
+  const vagas = Array.from({ length: n }, (_, k) => { const v = el("span", "ac-vaga"); v.dataset.n = k + 1; medidor.append(v); return v; });
+  pos.forEach(([x, y]) => {
+    const m = macaBtn("solta");
+    m.style.left = x + "%"; m.style.top = y + "%";
+    m.addEventListener("click", () => {
+      if (acabou || travado || m.classList.contains("comida")) return;
+      comidas++;
+      const num = comidas;
+      comer(m, boca);
+      vagas[num - 1].textContent = String(num); vagas[num - 1].classList.add("cheia");
+      numero(num); tentativas = 0;
+      bruxa.classList.remove("ai"); void bruxa.offsetWidth; bruxa.classList.add("ai");
+      if (num === n) { acabou = true; depois(() => vitoria(), 800); }
+    });
+    pomar.append(m);
+  });
+  function vitoria() {
+    somAc("magia"); boca.classList.add("poderosa");
+    falar(F.poder, C);
+    aoCalar(() => {
+      somAc("pow");
+      const pow = el("span", "ac-pow", "POW!"); arena.append(pow);
+      bruxa.innerHTML = D.bruxa(n, "derrotada"); bruxa.classList.add("derrotada");
+      falar(F.derrotada, bq(n));
+      aoCalar(() => certo(recado, r, null, F.conseguimos), 700);
+    }, 900);
+  }
+  arena.append(pomar, bruxa);
+  dicaAtual = null;
+  t.append(cab, arena, medidor, recado, dicaDe("Pai: cada maçã que ela toca vira um número na barra de força. Contem juntos em voz alta, uma maçã de cada vez."));
+};
+
+/* ---------- 🫧 as bolhas: soltar as crianças, contando ---------- */
+telas["ac-bolhas"] = function (r) {
+  const n = r.n;
+  const t = novaTela("ac ac-bolhas");
+  t.style.setProperty("--bolha", n <= 2 ? "clamp(96px, 16vw, 180px)" : n <= 4 ? "clamp(86px, 14vw, 160px)" : n <= 6 ? "clamp(78px, 12.5vw, 145px)" : "clamp(66px, 10.5vw, 124px)");
+  const recado = el("p", "recado");
+  const cab = cabeca(F.bolhasPede);
+  const ceuB = el("div", "ac-ceu-bolhas");
+  const tonta = bruxaEl(n, "derrotada"); tonta.classList.add("pequena");
+  // o canto de baixo, à direita, fica para a bruxa tonta
+  const cols = n <= 4 ? 3 : n <= 6 ? 4 : n <= 8 ? 5 : 6;
+  const pos = espalha(n, cols, 2, (c, l) => c === cols - 1 && l === 1);
+  let soltas = 0;
+  pos.forEach(([x, y], k) => {
+    const b = el("button", "ac-bolha");
+    b.type = "button"; b.setAttribute("aria-label", "bolha");
+    b.style.left = x + "%"; b.style.top = y + "%"; b.style.animationDelay = (k * -0.37) + "s";
+    b.innerHTML = D.crianca(k, false, true);
+    b.addEventListener("click", () => {
+      if (travado || b.classList.contains("solta")) return;
+      soltas++;
+      const num = soltas;
+      somAc("pop");
+      b.classList.add("solta"); b.innerHTML = D.crianca(k, true, false);
+      b.append(el("span", "marca", String(num)));
+      numero(num);
+      if (num === n) depois(() => certo(recado, r, null, F.salvas(n)), 700);
+    });
+    ceuB.append(b);
+  });
+  ceuB.append(tonta);
+  t.append(cab, ceuB, recado, dicaDe("Pai: uma bolha de cada vez, contando em voz alta. A criança que sai pula de alegria e ganha o número dela."));
+};
+
+/* ---------- 👗 qual é o número da bruxa? (ver o número e achar o cartão) ---------- */
+telas["ac-numero"] = function (r) {
+  const n = r.n;
+  const t = novaTela("ac ac-numero");
+  const recado = el("p", "recado");
+  const cab = cabeca(F.numeroPede);
+  const mostra = el("div", "ac-mostra");
+  const bruxa = bruxaEl(n, "brava");
+  mostra.append(bruxa);
+  const g = el("div", "grade numeros");
+  embaralha(r.opcoes).forEach((k) => {
+    const b = cartaoNumero(k);
+    b.addEventListener("click", () => {
+      if (travado) return;
+      numero(k);
+      if (k === n) { bruxa.innerHTML = D.bruxa(n, "rindo"); return certo(recado, r, b, F.ehBruxa(n)); }
+      erro(recado, b);
+    });
+    g.append(b);
+  });
+  dicaAtual = () => { bruxa.classList.add("mostra-numero"); const b = g.querySelector(`[data-n="${n}"]`); if (b) b.classList.add("dica"); };
+  t.append(cab, mostra, g, recado, dicaDe("Pai: mostre o número no vestido da bruxa. Se ela errar, contem os pontinhos do cartão juntos."));
+};
+
+/* ---------- 🔎 cadê a Bruxa N? (ouvir o número e achar a bruxa) ---------- */
+telas["ac-cade"] = function (r) {
+  const n = r.n;
+  const t = novaTela("ac ac-cade");
+  const recado = el("p", "recado");
+  const cab = cabeca(F.cadePede(n));
+  const g = el("div", "grade ac-bruxas");
+  embaralha(r.opcoes).forEach((k) => {
+    const b = el("button", "cartao ac-escolha-bruxa");
+    b.type = "button"; b.setAttribute("aria-label", "Bruxa " + k); b.dataset.n = k;
+    b.innerHTML = D.bruxa(k, "rindo");
+    b.addEventListener("click", () => {
+      if (travado) return;
+      falar(F.souBruxa(k), bq(k));
+      if (k === n) return certo(recado, r, b, F.ehBruxa(n));
+      erro(recado, b);
+    });
+    g.append(b);
+  });
+  dicaAtual = () => { const b = g.querySelector(`[data-n="${n}"]`); if (b) b.classList.add("dica"); };
+  t.append(cab, g, recado, dicaDe("Pai: a Capitã fala o número; ela procura o número no vestido. Cada bruxa diz quem é quando é tocada."));
+};
+
+/* ---------- 🔢 quantas maçãs? (contar espalhadas; na última fase, as 10 maçãs mágicas da Bruxa 10) ---------- */
+telas["ac-quantas"] = function (r) {
+  const n = r.n, final = !!r.final;
+  const t = novaTela("ac ac-quantas" + (final ? " final" : ""));
+  tamanho(t, final ? 10 : n + 1);
+  const recado = el("p", "recado");
+  const cab = cabeca(final ? F.finalPede : F.quantasPede, final ? [{ quem: bq(10), t: F.bruxaChefe(10) }] : null);
+  const boca = cab.querySelector(".avatar");
+  const campo = el("div", "ac-campo" + (final ? " dez" : ""));
+  const macas = [];
+  let contados = 0, acabou = false;
+  const pos = final ? Array.from({ length: 10 }, (_, k) => [10 + (k % 5) * 20, k < 5 ? 27 : 73]) : espalha(n, n <= 2 ? 3 : n <= 4 ? 3 : 4, n <= 4 ? 2 : 3);
+  pos.forEach(([x, y]) => {
+    const m = macaBtn("solta");
+    m.style.left = x + "%"; m.style.top = y + "%";
+    m.addEventListener("click", () => {
+      if (acabou || travado || m.querySelector(".marca")) return;
+      contados++;
+      m.append(el("span", "marca", String(contados)));
+      numero(contados); som("passo");
+      if (contados === n) { depois(() => falar(F.quantasSao, C, true), 200); g.classList.add("chama"); }
+    });
+    macas.push(m); campo.append(m);
+  });
+  const g = el("div", "grade numeros");
+  embaralha(r.opcoes).forEach((k) => {
+    const b = cartaoNumero(k);
+    b.addEventListener("click", () => {
+      if (acabou || travado) return;
+      numero(k);
+      if (k !== n) {
+        erro(recado, b, F.deNovo);
+        contados = 0; g.classList.remove("chama");
+        macas.forEach((m) => { const x = m.querySelector(".marca"); if (x) x.remove(); });
+        return;
+      }
+      if (!final) return certo(recado, r, b, F.saoN(n));
+      // a última: a Capitã come as 10, contando, e a Bruxa 10 é derrotada
+      acabou = true; b.classList.add("certo");
+      dizer(recado, "ok", F.dezMacas, true, 200);
+      aoCalar(() => {
+        macas.forEach((m, k) => depois(() => { const x = m.querySelector(".marca"); if (x) x.remove(); comer(m, boca); numero(k + 1); }, k * 780));
+        depois(() => {
+          somAc("magia"); boca.classList.add("poderosa"); falar(F.poder, C);
+          aoCalar(() => {
+            somAc("pow");
+            const pow = el("span", "ac-pow", "POW!"); arena.append(pow);
+            bruxa.innerHTML = D.bruxa(10, "derrotada"); bruxa.classList.add("derrotada");
+            falar(F.derrotada, bq(10));
+            aoCalar(() => certo(recado, r, null, F.conseguimos), 700);
+          }, 900);
+        }, 10 * 780 + 500);
+      }, 300);
+    });
+    g.append(b);
+  });
+  dicaAtual = () => { const b = g.querySelector(`[data-n="${n}"]`); if (b) b.classList.add("dica"); };
+  let arena = campo, bruxa = null;
+  if (final) { arena = el("div", "ac-arena final"); bruxa = bruxaEl(10, "rindo", true); arena.append(campo, bruxa); }
+  t.append(cab, arena, g, recado, dicaDe(final
+    ? "Pai: a fase final! Toquem em cada maçã contando de 1 até 10, sem pular. Depois ela escolhe quantas são."
+    : "Pai: cada maçã tocada ganha um número (e não conta duas vezes). Depois ela escolhe quantas são. Se errar, a contagem recomeça devagar."));
+};
+
+/* ---------- 🕳️ o número que falta (a bruxa roubou um da trilha) ---------- */
+telas["ac-falta"] = function (r) {
+  const n = r.n;
+  const falta = r.falta || 2 + Math.floor(Math.random() * (n - 2));
+  const t = novaTela("ac ac-falta");
+  const recado = el("p", "recado");
+  const cab = cabeca(F.faltaPede);
+  const trilha = el("div", "ac-trilha");
+  trilha.style.setProperty("--n", n);
+  t.style.setProperty("--pedra", n <= 4 ? "clamp(52px, 13vw, 120px)" : n <= 6 ? "clamp(44px, 11vw, 108px)" : n <= 8 ? "clamp(36px, 9.4vw, 96px)" : "clamp(30px, 7.6vw, 86px)");
+  const pedras = [];
+  for (let k = 1; k <= n; k++) {
+    const p = el("span", "ac-pedra" + (k === falta ? " buraco" : ""), k === falta ? "?" : String(k));
+    if (k === falta) { const ch = el("span", "ac-chapeuzinho"); ch.innerHTML = D.bruxa(n, "rindo"); p.append(ch); }
+    pedras.push(p); trilha.append(p);
+  }
+  let feito = false, parar = null;
+  aoCalar(() => { if (!feito) parar = contaJunto(pedras.slice(0, falta - 1), () => { if (!feito) pedras[falta - 1].classList.add("chama"); }); }, 600);
+  const g = el("div", "grade numeros");
+  embaralha([falta - 1, falta, falta + 1]).forEach((k) => {
+    const b = cartaoNumero(k);
+    b.addEventListener("click", () => {
+      if (travado || feito) return;
+      if (parar) { parar(); parar = null; }
+      numero(k);
+      if (k !== falta) { pedras[falta - 1].classList.add("chama"); return erro(recado, b); }
+      feito = true; b.classList.add("certo");
+      const p = pedras[falta - 1];
+      voaItem(b.querySelector(".numero"), p, () => {
+        p.classList.remove("buraco", "chama"); p.classList.add("achada"); p.textContent = String(falta);
+        depois(() => contaJunto(pedras, () => certo(recado, r, null, F.naoFalta)), 500);
+      });
+    });
+    g.append(b);
+  });
+  dicaAtual = () => { const b = g.querySelector(`[data-n="${falta}"]`); if (b) b.classList.add("dica"); };
+  t.append(cab, trilha, g, recado, dicaDe("Pai: contem a trilha juntos, apontando, até chegar no buraco: qual número vem ali? Esse é o número que ela costuma pular."));
+};
+
+/* ---------- 🎈 contar na ordem (balões de 1 a N) ---------- */
+telas["ac-ordem"] = function (r) {
+  const n = r.n;
+  const t = novaTela("ac ac-ordem");
+  const recado = el("p", "recado");
+  const cab = cabeca(F.ordemPede);
+  const ceuB = el("div", "ac-baloes");
+  const fila = el("div", "ac-fila");
+  fila.style.setProperty("--n", n);
+  const vagas = Array.from({ length: n }, () => { const v = el("span", "ac-vaga-balao"); fila.append(v); return v; });
+  let prox = 1;
+  const baloes = [];
+  const pos = espalha(n, 5, n <= 5 ? 2 : 3);
+  embaralha(Array.from({ length: n }, (_, k) => k + 1)).forEach((k, idx) => {
+    const b = el("button", "ac-balao");
+    b.type = "button"; b.setAttribute("aria-label", String(k)); b.dataset.n = k;
+    b.style.left = pos[idx][0] + "%"; b.style.top = pos[idx][1] + "%"; b.style.animationDelay = (idx * -0.53) + "s";
+    b.innerHTML = balaoSVG(k);
+    b.addEventListener("click", () => {
+      if (travado || b.classList.contains("foi")) return;
+      if (k !== prox) return erro(recado, b, F.esseNao);
+      prox++; tentativas = 0; b.classList.remove("dica");
+      numero(k); somAc("pop");
+      const v = vagas[k - 1];
+      b.classList.add("foi");
+      voaItem(b.querySelector("svg"), v, () => { v.innerHTML = balaoSVG(k); v.classList.add("cheia"); });
+      if (k === n) depois(() => certo(recado, r, null, F.ordemFim), 800);
+    });
+    baloes.push(b); ceuB.append(b);
+  });
+  dicaAtual = () => { const b = baloes.find((x) => +x.dataset.n === prox); if (b) b.classList.add("dica"); };
+  t.append(cab, ceuB, fila, recado, dicaDe("Pai: primeiro o 1, depois o 2... Se ela travar, contem juntos desde o 1 até o número que falta."));
+};
+
+/* ---------- 🧺 encher a cesta: pôr N e parar no N ---------- */
+telas["ac-pegar"] = function (r) {
+  const n = r.n, total = r.total || n + 3;
+  const t = novaTela("ac ac-pegar");
+  const recado = el("p", "recado");
+  const cab = cabeca(F.cestaPede(n));
+  const duo = el("div", "ac-pegar-duo");
+  const arvore = el("div", "ac-arvore");
+  arvore.innerHTML = ARVORE;
+  const cesta = el("div", "ac-cesta");
+  cesta.insertAdjacentHTML("afterbegin", `<div class="ac-cesta-fundo">${RECIPIENTES.cesta}</div>`);
+  const dentro = el("div", "ac-dentro");
+  const placar = el("span", "ac-placar", "0");
+  cesta.append(dentro, placar);
+  const naCesta = [];
+  const pos = espalha(total, 5, 3).map(naCopa);
+  pos.forEach(([x, y]) => {
+    const m = macaBtn("solta");
+    m.style.left = x + "%"; m.style.top = y + "%";
+    m.addEventListener("click", () => {
+      if (travado || m.classList.contains("usada")) return;
+      m.classList.add("usada");
+      const mini = macaBtn("mini");
+      mini.setAttribute("aria-label", "tirar da cesta");
+      naCesta.push({ mini, m });
+      const qtd = naCesta.length;
+      placar.textContent = String(qtd); numero(qtd); recado.textContent = "";
+      voaItem(m.querySelector("svg"), dentro, () => { dentro.append(mini); });
+      mini.addEventListener("click", () => {
+        if (travado) return;
+        const k = naCesta.findIndex((x) => x.mini === mini);
+        if (k < 0) return;
+        naCesta.splice(k, 1); mini.remove(); m.classList.remove("usada");
+        placar.textContent = String(naCesta.length);
+        if (naCesta.length) numero(naCesta.length); else calar();
+      });
+    });
+    arvore.append(m);
+  });
+  const pronto = botaoGrande("Pronto! ✔", () => {
+    if (travado) return;
+    if (naCesta.length === n) return certo(recado, r, pronto, F.cestaCerta(n));
+    erro(recado, pronto, naCesta.length > n ? F.demais : F.aindaFalta);
+  }, "ac-pronto");
+  dicaAtual = null;
+  duo.append(arvore, cesta);
+  t.append(cab, duo, pronto, recado, dicaDe("Pai: ela põe uma maçã de cada vez, contando. Quando chegar no " + n + ", para e toca em Pronto. Tocar numa maçã da cesta tira ela de volta."));
+};
+
+/* ---------- 🏅 o diploma ---------- */
+telas["ac-diploma"] = function (r) {
+  const t = novaTela("ac ac-diploma");
+  const nome = nomeCrianca();
+  const papel = el("div", "ac-papel");
+  papel.insertAdjacentHTML("afterbegin", `<svg class="ac-medalha" viewBox="0 0 120 150" aria-hidden="true"><path d="M34 0h22l14 52H48zM86 0H64L50 52h22z" fill="#2a6fdb" stroke="#173f86" stroke-width="3"/><circle cx="60" cy="96" r="46" fill="url(#ac-ouro)" stroke="#b77d00" stroke-width="5"/>${D.estrelinha(60, 96, 30, "#fff4b0")}<text x="60" y="108" text-anchor="middle" font-family="'Baloo 2', sans-serif" font-weight="800" font-size="30" fill="#b77d00">10</text></svg>`);
+  papel.append(elT("h2", "pergunta", ["Heroína dos Números", "Heroína dos Números"]));
+  if (nome) papel.append(el("p", "ac-papel-nome", nome));
+  const fila = el("div", "ac-dez");
+  for (let k = 1; k <= 10; k++) {
+    const b = el("button", "ac-dez-n", String(k)); b.type = "button";
+    b.addEventListener("click", () => { numero(k); b.classList.remove("pula"); void b.offsetWidth; b.classList.add("pula"); });
+    fila.append(b);
+  }
+  papel.append(elT("p", "explica", F.diploma), fila);
+  instrucao = { t: F.diploma, quem: C };
+  depois(() => falar(F.diploma, C), 400);
+  som("certo"); festa();
+  estrelas++; pintarEstrelas();
+  t.append(avatar(C, "feliz"), papel, botaoGrande("Fim!", proxima), dicaDe("Pai: tocando nos números, a Capitã fala cada um. Dá para contar até 10 juntas mais uma vez!"));
+};
+
+/* ---------- a história em quadrinhos ---------- */
+const fala = (quem, t) => ({ quem, t });
+const QC = D.CENAS;
+const HQ_INICIO = () => [
+  { cena: QC.academia, legenda: fala(C, F.hq1), som: "RÁ RÁ RÁ!", somPos: "left:3%;top:4%", baloes: [{ ...fala(bq(10), F.risada), x: 34, y: 6, w: 26, lado: "dir" }] },
+  { cena: QC.bolhas, baloes: [{ ...fala(bq(10), F.hq2), x: 4, y: 4, w: 40, lado: "dir" }] },
+  { cena: QC.chegada, som: "ZUM!", somPos: "left:6%;bottom:8%", baloes: [{ ...fala(C, F.hq3), x: 3, y: 5, w: 44, lado: "dir" }] },
+  { cena: QC.poder, legenda: fala(C, F.hq4), baloes: [{ ...fala(C, F.hq4b), x: 60, y: 4, w: 37, lado: "esq" }] },
+  { cena: () => QC.regra(2), legenda: fala(C, F.hq5) }
+];
+const hqIrma = (n, m) => () => [
+  { cena: () => QC.derrotada(n), som: "POW!", somPos: "right:30%;top:8%", legenda: fala(C, F.irmaLegenda(n)) },
+  { cena: () => QC.irma(n, m), som: "RÁ RÁ!", somPos: "left:30%;bottom:10%", baloes: [{ ...fala(bq(m), F.irmaBalao(m)), x: 3, y: 4, w: 44, lado: "dir" }] },
+  { cena: () => QC.regra(m), legenda: fala(C, F.irmaCapita(m)) }
+];
+const HQ_FIM = () => [
+  { cena: QC.livres, som: "VIVA!", somPos: "right:5%;top:6%", baloes: [{ ...fala(C, F.fim1), x: 3, y: 4, w: 40, lado: "dir" }] },
+  { cena: QC.irmas, baloes: [{ ...fala(bq(10), F.fim2), x: 3, y: 4, w: 56, lado: "dir" }] },
+  { cena: QC.juntos, legenda: fala(C, F.fim3) }
+];
+
+/* ---------- os níveis e as fases ---------- */
+const viz = (n) => [n - 1, n, n + 1];
+const TEMAS = {
+  2: { ceu: "#ffeaf4", "ceu-fundo": "#ffc6e1", grama: "#e978b0" },
+  4: { ceu: "#fff1df", "ceu-fundo": "#ffd2a3", grama: "#f0a050" },
+  6: { ceu: "#e6f8ec", "ceu-fundo": "#b8e8c9", grama: "#5cbf83" },
+  8: { ceu: "#e5f0ff", "ceu-fundo": "#bcd6ff", grama: "#6d9ee8" },
+  10: { ceu: "#f1e8ff", "ceu-fundo": "#d6c2f6", grama: "#9a72d8" }
+};
+function fasesDe(n) {
+  const L = [];
+  const f = (icone, titulo, rodadas, extra) => L.push({ icone, titulo, rodadas, ...(extra || {}) });
+  if (n === 2) f("📖", "A história", [{ tipo: "ev-quadrinho", quadros: HQ_INICIO, fim: "Vamos!" }]);
+  f("🍎", ["Comer " + n + " maçãs", "Comer " + n + " maçãs"], [{ tipo: "ac-comer", n }]);
+  if (n <= 6) f("👗", "O número da Bruxa", [{ tipo: "ac-numero", n, opcoes: viz(n) }]);
+  else f("🔎", ["Cadê a Bruxa " + n + "?", "Onde está a Bruxa " + n + "?"], [{ tipo: "ac-cade", n, opcoes: n === 8 ? [4, 6, 8] : [6, 8, 10] }]);
+  if (n >= 8) f("🎈", ["Contar na ordem", "Contar por ordem"], [{ tipo: "ac-ordem", n }]);
+  if (n >= 4) f("🕳️", "O número que falta", n === 10 ? [{ tipo: "ac-falta", n }, { tipo: "ac-falta", n }] : [{ tipo: "ac-falta", n }]);
+  if (n <= 8) f("🔢", "Quantas maçãs?", [{ tipo: "ac-quantas", n, opcoes: viz(n) }]);
+  if (n >= 6) f("🧺", ["Encher a cesta", "Encher o cesto"], [{ tipo: "ac-pegar", n, total: n + 3 }]);
+  if (n < 10) f("⚡", "Derrotar a Bruxa " + n, [{ tipo: "ac-comer", n, chefe: true }, { tipo: "ac-bolhas", n }, { tipo: "ev-quadrinho", quadros: hqIrma(n, n + 2), fim: "Continuar" }], { chefe: true });
+  else f("👑", "A Bruxa 10", [{ tipo: "ac-quantas", n: 10, opcoes: [8, 9, 10], final: true }, { tipo: "ac-bolhas", n: 10 }, { tipo: "ev-quadrinho", quadros: HQ_FIM, fim: "Continuar" }, { tipo: "ac-diploma" }], { chefe: true });
+  return L;
+}
+
+D.instalar();
+const ev = Evento.registrar({
+  id: ID, titulo: F.titulo, curto: "Academia", selo: "Evento",
+  sobre: ["Conte até 10 e salve as crianças com a Capitã Estrela!", "Conta até 10 e salva as crianças com a Capitã Estrela!"],
+  narradora: C, tema: { ceu: "#fff4d6", "ceu-fundo": "#ffd98a", grama: "#f0a84a" },
+  pacotes: ["capita-base", "capita-contagem", "capita-" + PAC],
+  textos: { boasVindas: F.boasVindas, escolha: F.escolha, trancada: F.trancada, nivelTrancado: F.nivelTrancado, faseCompleta: F.faseCompleta,
+    nivelCompleto: (nv) => F.nivelCompleto(nv.n), completo: F.completo },
+  niveis: IRMAS.map((n) => ({ id: "b" + n, n, nome: "Bruxa " + n, cor: D.COR[n].chapeu, tema: TEMAS[n], fala: F.nivel(n), fases: fasesDe(n),
+    // o nível usa as falas do número dele, a bruxa dele, a irmã mais velha (que aparece no fim) e, no nível 1, a Bruxa 10 da história
+    pacotes: ["capita-" + pacNivel(n), bq(n) + "-" + PAC, ...(n < 10 ? [bq(n + 2) + "-" + PAC] : []), ...(n === 2 || n === 8 ? [bq(10) + "-" + PAC] : []),
+      ...(n === 8 ? [bq(4) + "-" + PAC, bq(6) + "-" + PAC] : n === 10 ? [bq(6) + "-" + PAC, bq(8) + "-" + PAC] : [])] })),
+  capa: () => D.capa(),
+  retrato: (nv, estado) => D.retrato(nv.n, estado),
+  topo: (p) => D.topo(!!p.completo),
+  premio: { botao: "🏅 Diploma", abrir: () => Evento.abrirExtra(ev, "Diploma", [{ tipo: "ac-diploma" }], ["capita-" + pacNivel(10)]) },
+  dicaPai: "Pai: a Academia treina contar de 1 até 10 sem pular números. Um toque, um número: peça para ela tocar (ou apontar) uma coisa de cada vez e falar o número junto com a Capitã. Cada fase abre a próxima; o progresso fica guardado neste aparelho."
+});
+
+return { F, todasAsFalas, ev, PAC, IRMAS };
+})();
+</script>
+<script>
+/* Vozes gravadas da Academia dos Números (feito por gerar_vozes.py; não edite à mão).
+   VOZES_INDICE[quem]["texto da tela"] = [pacote, início (s), duração (s), boca (25 valores por segundo)] */
+Evento.vozes({"bruxa10": {"Aaai! Fui derrotada!": ["ev-academia", 0.185, 1.741, "27666666667311119999397437116776435431000000"], "Rá, rá! Eu sou a Bruxa 10, a mais velha de todas!": ["ev-academia", 2.226, 5.968, "111111111111111277776553211111111112267677877752111112322999989336785233376358776322111111117899987894243877757513311198741543112111111111111111111110"], "Rá, rá! Sou a Bruxa 10, a mais velha de todas!": ["ev-academia", 8.494, 4.88, "000011368887655421000000001113333329998665631578335448527998741211000000002899986893327887774252001798642652122110000011000"], "Rá, rá! Eu sou a Bruxa 10! Para me derrotar, precisa de 10 maçãs!": ["ev-academia", 13.674, 8.2, "0111111111000023887765311100000000124776653210000000995222269995135532759832343574268654211221100000000067667799984386516610057655421000000000058922228982893365278763299651222398752112221110001111111111110"], "Rá, rá! Sou a Bruxa 10! Para me derrotar, são precisas 10 maçãs!": ["ev-academia", 22.174, 8.221, "11111111111111111248777643111112387653111111111123335988897541111157431779923442642221876542112111111111111987998569731651156554311111111112287991269612222898932498423298732699732222786531111111111111111111"], "Eu sou a Bruxa 10!": ["ev-academia", 30.695, 1.477, "4975222289887734799334273265431211000"], "Sou a Bruxa 10!": ["ev-academia", 32.472, 1.275, "13449998858574343872976541111100"], "Rá, rá, rá!": ["ev-academia", 34.046, 1.95, "1111111111111122799876326998622577763111111111111"], "Quem pula números fica nas minhas bolhas!": ["ev-academia", 36.297, 2.922, "13968500132235769988986344221119912778776217999887652232787654433211110000"], "Quem salta números fica nas minhas bolhas!": ["ev-academia", 39.519, 4.133, "00000000000000026784222587751388888999856522211199401776889832898778741448996534321111100000110000000000"], "Desculpa! A gente só queria aprender a contar também!": ["ev-academia", 43.953, 5.757, "111111111111111199333211699941158754211111111115898448998132332222786113975889963136217588897388862143116774137641138996766653111111111111111111"], "Desculpem! Nós só queríamos aprender a contar também!": ["ev-academia", 50.01, 4.619, "25853320199984018765320000000000122228974000015896988668875221066017688982777733004640029986117777310178995966543100"]}, "bruxa2": {"Aaai! Fui derrotada!": ["ev-academia", 0.185, 2.548, "1111111111111687776796111799498369118777625543111111111111111111"], "Rá, rá! Eu sou a Bruxa 2! Ninguém me derrota!": ["ev-academia", 3.033, 4.877, "01498874210011489866553100000000000123333787456553296832433694249986521122100000000001998897298888888851765215874001653100"], "Rá, rá! Sou a Bruxa 2! Ninguém me derrota!": ["ev-academia", 8.21, 4.421, "011576665430000000013676645311222799983157319795133563287864312121000000000047879973978997528751287630025532000"]}, "bruxa4": {"Aaai! Fui derrotada!": ["ev-academia", 0.185, 2.577, "11111111111111118898987994115549726516999747641111111111111111111"], "Rá, rá! Eu sou a Bruxa 4! Ninguém me derrota!": ["ev-academia", 3.061, 5.898, "0111111111000124888765200000011269887764100000022336989988435597333326500116765301346520000000001998996397799997384641598620145420000011111111111110"], "Rá, rá! Sou a Bruxa 4! Ninguém me derrota!": ["ev-academia", 9.259, 4.274, "02465543246543200000001232279997357437664223335400027976301376410000000000197667496799974896415866201553100"], "Rá, rá! Eu sou a Bruxa 4! Para me derrotar, precisa de 4 maçãs!": ["ev-academia", 13.833, 7.094, "0000125986542000000000012267765431000000000000000001233556542566233440038653012430000000000076799996378438710276554210000000003893122398449625400187764026999862222199763121210000"], "Rá, rá! Sou a Bruxa 4! Para me derrotar, são precisas 4 maçãs!": ["ev-academia", 21.227, 7.056, "011487766530000000112787654210000000001323899997589972333540000197664003353100000000006867999737741662006765531100000000127994646222288327522114975212999641215865211110000001000"], "Eu sou a Bruxa 4!": ["ev-academia", 28.583, 1.386, "39942339997355434483035764112353100"], "Sou a Bruxa 4!": ["ev-academia", 30.269, 1.202, "0334797579953465048974012430000"]}, "bruxa6": {"Aaai! Fui derrotada!": ["ev-academia", 0.185, 2.636, "111111111111117987778972111999756527413777762653111111111111111111"], "Rá, rá! Eu sou a Bruxa 6! Ninguém me derrota!": ["ev-academia", 3.121, 6.217, "111111111111111112677775421111111112677654321111111111179873223248897774359993233572212576654111111011100199567885766789987397622775201343111111111111111110"], "Rá, rá! Sou a Bruxa 6! Ninguém me derrota!": ["ev-academia", 9.637, 4.849, "13348866431000000001487766531000000000012287776439797243265222287654111211000000000999999497789987356514764201444300000000"], "Rá, rá! Eu sou a Bruxa 6! Para me derrotar, precisa de 6 maçãs!": ["ev-academia", 14.787, 7.541, "012387667764210000000000012489999864210000000068742222498998876424698233337422217765412222100000000008776789986426663366410000776665310000000867222239963474136222269963299842222654212111000"], "Rá, rá! Sou a Bruxa 6! Para me derrotar, são precisas 6 maçãs!": ["ev-academia", 22.628, 7.638, "11111117886666531111111001113278765311111111111122233999877658665323327522269876411221101111000029868999747663486115766521111011299951464222259983386222222228999632997422226875411221111101111"], "Eu sou a Bruxa 6!": ["ev-academia", 30.566, 1.572, "4984233699977267943327422287665311111000"], "Sou a Bruxa 6!": ["ev-academia", 32.438, 1.386, "03339998736562332742226555311211000"]}, "bruxa8": {"Aaai! Fui derrotada!": ["ev-academia", 0.185, 1.843, "19997777998111137674787286009888546531000000000"], "Rá, rá! Eu sou a Bruxa 8! Ninguém me derrota!": ["ev-academia", 2.327, 5.184, "0116666554300000000000133666554310000000004996222259876632459932333487888730011552000000000009999989724457886636752136653001442000"], "Rá, rá! Sou a Bruxa 8! Ninguém me derrota!": ["ev-academia", 7.811, 5.817, "11111111111111125987654321111111115775311111111111233898887537994344356665531123432111111111179989994888888997339752177642113432111111111111111111"], "Rá, rá! Eu sou a Bruxa 8! Para me derrotar, precisa de 8 maçãs!": ["ev-academia", 13.928, 7.299, "011787665421110011100022687655443111000005994335999745796234443664210000787653001144211100000004766688986267525621176544211111111000896223265447523641005999921218965222239765211221100"], "Rá, rá! Sou a Bruxa 8! Para me derrotar, são precisas 8 maçãs!": ["ev-academia", 21.527, 7.41, "011687766641000000011226776431000000000133344456665545544414443663377654102153100000000019789995897367211876654210000000122999164722223988523663110000299730269964222387542111110000001100"], "Eu sou a Bruxa 8!": ["ev-academia", 29.237, 1.665, "387322299987266982553676655300213200000000"], "Sou a Bruxa 8!": ["ev-academia", 31.202, 1.178, "122698854694234366654201101000"]}, "capita": {"Bem-vinda à Academia dos Números!": ["ev-academia", 0.185, 2.293, "1377663167799687119961257346788776523421665655423421111100"], "Vamos salvar as crianças?": ["ev-academia", 2.777, 1.623, "14289875223994279733110246666662213311100"], "Essa ainda está trancada! Primeiro a outra.": ["ev-academia", 4.7, 3.672, "36663222466677888887542110189610446620268862254310000000000045789999898745465543331022432100"], "Essa ainda está fechada! Primeiro a outra.": ["ev-academia", 8.673, 3.534, "49732225578996541029600432113996233211000000000015679998766434320000003787777761033432000"], "Primeiro a irmã mais nova!": ["ev-academia", 12.506, 1.519, "24578776776559866887652598899314532000"], "Fase completa! Vamos para a próxima?": ["ev-academia", 14.325, 3.062, "01199995243016760167895004421000000000000000002379886421034530139972224642100"], "Fase completa! Vamos à próxima?": ["ev-academia", 17.687, 2.439, "0019994230165402566620154221000000002267763571049952237864200"], "Primeiro a que está brilhando!": ["ev-academia", 20.426, 1.674, "256899887245201311117963355567666642321000"], "Primeiro a que está a brilhar!": ["ev-academia", 22.4, 1.696, "1568999975546401221104665345775667764310000"], "Poder das maçãs mágicas!": ["ev-academia", 24.396, 1.702, "1763699426743996224743988764112012431111000"], "Conseguimos!": ["ev-academia", 26.398, 0.778, "18853334998863111000"], "Estoura as bolhas para soltar as crianças! Conta comigo!": ["ev-academia", 27.476, 4.909, "142220079974565323336777555521111000199556321146520039988435422102467777774222321111110000000000001687631502667999822542100"], "Rebenta as bolhas para soltar as crianças! Conta comigo!": ["ev-academia", 32.686, 4.837, "0159559767404642000003763233686535421100774422258510589453210336776664121321111000000000016977660262013867999999322432100"], "Qual é o número da Bruxa? Olha no vestido dela!": ["ev-academia", 37.823, 3.049, "19977977899888564496335652222178530000000498768689853772202453753798985653100"], "Qual é o número da Bruxa? Olha para o vestido dela!": ["ev-academia", 41.172, 3.578, "159977566799877773645763355422121663100000000007886435200656753276210145357329789655432000"], "Quantas maçãs tem aqui? Toca em cada uma e conta comigo!": ["ev-academia", 45.05, 3.919, "14898166329972226763136778401156431000000000028970265673149973977877641152025897053026998775112100"], "Quantas maçãs há aqui? Toca em cada uma e conta comigo!": ["ev-academia", 49.269, 3.99, "1665437336862222665359951012555310000000000578303445512699445567888641023002366503301689988841232100"], "E agora: quantas são?": ["ev-academia", 53.559, 1.291, "179752675433100299806322366654000"], "Vamos contar de novo, devagarinho!": ["ev-academia", 55.15, 2.168, "0386632146614996225776776213321003583594377587887653000"], "Vamos contar outra vez, devagarinho!": ["ev-academia", 57.618, 2.524, "1479896432058725998761347622788885221100378399457847898765331000"], "A Bruxa roubou um número! Qual número falta?": ["ev-academia", 60.442, 3.777, "49842644222442115642215666665410000566789677786544432100000000001999746557755311089863003432100"], "A Bruxa roubou um número! Que número falta?": ["ev-academia", 64.519, 3.597, "497426675322246311466322678975667999899865534432100000000001156678777764311119995101443100"], "Isso! Agora não falta nenhum!": ["ev-academia", 68.416, 2.279, "266222235210000006953577767677663114997117565589886543100"], "Boa! Agora não falta nenhum!": ["ev-academia", 70.995, 1.919, "167855310000000002753897456552189505788997654300"], "Vamos contar na ordem! Começa no 1.": ["ev-academia", 73.214, 2.613, "138987532127750699378787789841666300277997884222568888778765542000"], "Vamos contar por ordem! Começa no 1.": ["ev-academia", 76.127, 2.66, "0787632101566016998511000146459999432664100267866632225667665332100"], "Esse não! Qual vem agora?": ["ev-academia", 79.087, 1.853, "39622479987765200000017997515654663388985543000"], "Esse não! Qual vem a seguir?": ["ev-academia", 81.24, 2.161, "1993225899766641000000000159962133443321433225668510000"], "Isso! Contou tudo na ordem!": ["ev-academia", 83.7, 1.977, "15622244431000000058851675114425568999955255442100"], "Boa! Contaste tudo por ordem!": ["ev-academia", 85.977, 2.068, "2659977421000000001787079931110273411558997446654100"], "Opa! Tem maçã demais. Tira uma!": ["ev-academia", 88.345, 2.829, "49800799410000000000498898652225744878898543121100000125557788886422100"], "Ups! Há maçãs a mais. Tira uma!": ["ev-academia", 91.474, 3.085, "499100222222210000000098766774211366523768887655311110000012467676799996432000"], "Ainda falta! Põe mais.": ["ev-academia", 94.86, 1.648, "378985410099630044200000134578654311111000"], "Bruxa 2! Para derrotar ela, eu preciso de 2 maçãs!": ["ev-academia", 96.808, 5.142, "045575796222464448878663121111000000000059885466454008998577888554210000000003991057512222567324422454277776329972222576531111000"], "Bruxa 2! Para a derrotar, preciso de 2 maçãs!": ["ev-academia", 102.25, 4.893, "265676322464448765631121100000000007999566369314510079999874100000001585222221556521243214432465855219974222266531111111000"], "Bruxa 4! Para derrotar ela, eu preciso de 4 maçãs!": ["ev-academia", 107.443, 4.95, "1655753226301399950023432000000000019888685456536600699855676554310000002871035522222443223322001899302478752111354431111100"], "Bruxa 4! Para a derrotar, preciso de 4 maçãs!": ["ev-academia", 112.694, 4.667, "154767422162013999930124320000000000088894654464315610048996310000001574222266323321310015996112699852221655412221100"], "Bruxa 6! Para derrotar ela, eu preciso de 6 maçãs!": ["ev-academia", 117.66, 5.215, "27596872346222287532111110000000000000099968658553760049996777876553200000000000991045422245422443365212246862287622223666511111000"], "Bruxa 6! Para a derrotar, preciso de 6 maçãs!": ["ev-academia", 123.176, 4.895, "284977622265222267877412211100000000000998667549823850049989732000000534222236663225300025522236866324998322257653112211100"], "Bruxa 8! Para derrotar ela, eu preciso de 8 maçãs!": ["ev-academia", 128.37, 5.037, "275387742224566666400114320000000000099675497357305997778998665210000000019930443222156423225432568750146876211124666521111100"], "Bruxa 8! Para a derrotar, preciso de 8 maçãs!": ["ev-academia", 133.708, 4.765, "065755642225620799970020211000000000009997577439822640039998631000000005552222155631143225767872137885222256542111211000"], "Bruxa 10! Para derrotar ela, eu preciso de 10 maçãs!": ["ev-academia", 138.773, 4.687, "2755333223644566654112221000000009965653952550079994757865543100000000008923453223356422442353276635986222156431111000"], "Bruxa 10! Para a derrotar, preciso de 10 maçãs!": ["ev-academia", 143.76, 4.486, "27856432154437766521122110000000004999995863685215400299888411000000006762222256532332254677349963222565411211000"], "Você salvou todas as crianças!": ["ev-academia-b10", 0.185, 1.99, "09524522995357740068753643832034998775111211121000"], "Salvaste as crianças todas!": ["ev-academia-b10", 2.475, 1.838, "0238962599611142102468776214210046642431111000"], "Quantas maçãs mágicas é preciso para derrotar a Bruxa 10? Vamos contar!": ["ev-academia-b10", 4.613, 5.744, "136752732887322365319999875134013542111100004802562212167632330018975763366425400799720474245752112542566641111000000003999852212788106886411000"], "Quantas maçãs mágicas são precisas para derrotar a Bruxa 10? Vamos contar!": ["ev-academia-b10", 10.657, 6.088, "146545057426998322255525998876314302553121100112676134222215663264211104967647624530039999521174246851114523655511110000000000236779732127993059986210000"], "Isso! 10 maçãs mágicas!": ["ev-academia-b10", 17.044, 2.031, "155222144200000054993377522256249977412102431111100"], "Boa! 10 maçãs mágicas!": ["ev-academia-b10", 19.376, 1.899, "155997775200013972687223536998763111012111111000"], "Conseguimos! Todas as crianças estão livres!": ["ev-academia-b10", 21.575, 3.813, "167523343389996522110000000000003899752655224311102546688888422354224111058999776762325411111000"], "Conseguimos! As crianças estão todas livres!": ["ev-academia-b10", 25.687, 3.751, "2576332445489997643111100000000000973210374666665522237311111029998400699369422589513351111100"], "Agora todo mundo conta junto: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10!": ["ev-academia-b10", 29.738, 7.586, "6954898850165356887675320158751663157751122200006999752000000043987677511110000000178987652211000000000299930333223665024310000000112498654121100012599611213100689401366567833524665521111100"], "Agora contamos todos juntos: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10!": ["ev-academia-b10", 37.624, 7.768, "377347886740167604579721116633431138997013311111000069888520059766741110005567754311110000013999701132100011257982113210000111778764111100000001127871011100676116999998224321000002377653121111000"], "Você contou até 10! Agora você é Heroína dos Números!": ["ev-academia-b10", 45.693, 4.703, "0364214501455400797753015543256677652111100000002499968425511145764006776546778677799865211454212999999965333112221000"], "Contaste até 10! Agora és Heroína dos Números!": ["ev-academia-b10", 50.696, 4.122, "26787039993211461035644355554222110000000078525998757403766216646677888662126752149999987653431111111000"], "Me ajuda a comer 10 maçãs! Toca em cada uma e conta comigo.": ["ev-academia-b10", 55.118, 5.599, "28875787421477845640136986753237772399832222766411111100000000002899301540048970259998356327988865310000044000016777630320137987543223210000"], "Ajuda-me a comer 10 maçãs! Toca em cada uma e conta comigo.": ["ev-academia-b10", 61.017, 5.467, "47652243274555542012578766652236631997322227753112110000000079992002443200000000799950299953630389898532000034001688615201689776621333100"], "10 maçãs! Que delícia!": ["ev-academia-b10", 66.784, 2.125, "286984278942338987422211000000015647976667422267543000"], "10 crianças salvas!": ["ev-academia-b10", 69.209, 1.423, "158611025998731322228977512542112100"], "Isso! É a Bruxa 10!": ["ev-academia-b10", 70.932, 1.587, "2892225641000006995866332653888852211100"], "Boa! É a Bruxa 10!": ["ev-academia-b10", 72.819, 1.51, "16579989974018732476222242454321111000"], "Cadê a Bruxa 10? Toca nela!": ["ev-academia-b10", 74.629, 1.75, "29959796479522444455322210008911689878654200"], "Onde está a Bruxa 10? Toca nela!": ["ev-academia-b10", 76.679, 2.28, "299963210697468832234257662111100000000682268998885554200"], "Pega 10 maçãs para mim! Põe na cesta e conta.": ["ev-academia-b10", 79.259, 3.952, "199736732677522987322216664111006667799998875310000000002764454532222665211042014200268776201342100"], "Apanha 10 maçãs para mim! Põe no cesto e conta.": ["ev-academia-b10", 83.511, 3.993, "9930285566534653288732233765210177779999986542000000000048766876222277762110110003520039887500454200"], "Isso! 10 maçãs na cesta!": ["ev-academia-b10", 87.804, 2.057, "1686222156300348992497322266528975212566521104542000"], "Boa! 10 maçãs no cesto!": ["ev-academia-b10", 90.161, 1.693, "1589887520003983589422594165211565211010000"], "A Bruxa dos Números pegou as crianças que ainda não sabiam contar!": ["ev-academia-b2", 0.185, 5.195, "4973275422217345422988998341110575215666520000007852110546777885223412110000013455567795669999865422169434687672015773029999731000"], "A Bruxa dos Números levou as crianças que ainda não sabiam contar!": ["ev-academia-b2", 5.679, 5.202, "39535444222553365111058999999986523211469630155554306521111677666762213311111000001366789985557766522249435677850157710399975210000"], "Eu sou a Capitã Estrela! Vou salvar as crianças!": ["ev-academia-b2", 11.181, 4.26, "39832229977206970252004545552121044767655554210000000000132598752111239974249963311023576777761112331111100"], "Sou a Capitã Estrela! Vou salvar as crianças!": ["ev-academia-b2", 15.742, 4.167, "012223987640396025300195554531110167877655432100000000002434995222587621699844312016457665541113321111000"], "O meu poder vem das maçãs mágicas!": ["ev-academia-b2", 20.208, 2.362, "389875035435785432577985834996222676119999752111014311111000"], "Para derrotar uma bruxa, eu como as maçãs do número dela!": ["ev-academia-b2", 22.871, 4.39, "29755359523640029997346878532343332111253200000000000993025656576328986221236665321589898998623215667643432100"], "Para derrotar uma bruxa, como as maçãs do número dela!": ["ev-academia-b2", 27.56, 4.019, "18857439932441057764688762244766211124310000000277566631798621113666522236689999997535216778644432100"], "A primeira é a Bruxa 2: 2 maçãs! Você me ajuda a contar?": ["ev-academia-b2", 31.88, 6.215, "294026699985465777899632777522226644467777775122210000000000000065486555665259995222277776531111000000000014675222587897679874325777763677301588502999632100"], "A primeira é a Bruxa 2: 2 maçãs! Ajudas-me a contar?": ["ev-academia-b2", 38.394, 5.504, "691177999987545665404895345762223643666667411211000000000023276567994218875232332887653222111000000000039875234455863198711686017996100000"], "Me ajuda a comer 2 maçãs! Toca em cada uma e conta comigo.": ["ev-academia-b2", 44.198, 5.484, "399977633256674356410000000000930566665443557882379732221666322110000000004889501445860279843767899986520000251012787414102798777412322000"], "Ajuda-me a comer 2 maçãs! Toca em cada uma e conta comigo.": ["ev-academia-b2", 49.982, 5.807, "59863125553565531730146887676222365655215752222566511110000000000000488840144300599702699535578898997542000000004400002677840440026899888512221000"], "2 maçãs! Que delícia!": ["ev-academia-b2", 56.089, 2.086, "14588975159973222398751111000000156499669971222443000"], "2 crianças salvas!": ["ev-academia-b2", 58.475, 1.524, "144865631134798942742229996225412211000"], "Isso! É a Bruxa 2!": ["ev-academia-b2", 60.299, 1.815, "2993331775100000000899466852238646987522221000"], "Boa! É a Bruxa 2!": ["ev-academia-b2", 62.414, 1.503, "18599985210000998478533663789851121100"], "Você derrotou a Bruxa 2!": ["ev-academia-b2", 64.217, 1.858, "13933563973960387895436742225535777754211111000"], "Derrotaste a Bruxa 2!": ["ev-academia-b2", 66.375, 1.63, "26964620799611157656842235358976312221100"], "Vamos comer 2 maçãs e derrotar a Bruxa 2! Conta comigo!": ["ev-academia-b2", 68.305, 5.514, "143676762112679976654315556763148852222167766411100000046459432135300079996309732565411227522677875311111100000000188751430389998962353200"], "A Bruxa 2 foi derrotada... mas ela tem uma irmã mais velha!": ["ev-academia-b2", 74.119, 5.322, "69642555321135343466564221111456357741463000499889722455422000001677328966500176666666656744789997666554200004999665343386655564432000"], "A Bruxa 2 foi derrotada... mas tem uma irmã mais velha!": ["ev-academia-b2", 79.741, 5.108, "59943274764111165331686677321111675366613640018999974245432100000000000899985211100565555667557559986666997554332228787666542100"], "Isso! São 2 maçãs!": ["ev-academia-b2", 85.149, 1.991, "27863221563210000122368778575997279842217765122100"], "Boa! São 2 maçãs!": ["ev-academia-b2", 87.44, 1.784, "157988731000012288996677624985122566631211100"], "4 maçãs? A gente consegue!": ["ev-academia-b2", 89.524, 2.13, "299940479986422227665321000026468711026632177853453000"], "São 4 maçãs? Nós conseguimos!": ["ev-academia-b2", 91.954, 2.604, "013684029970336997322166653111000006999621027722222588986521111000"], "Me ajuda a comer 4 maçãs! Toca em cada uma e conta comigo.": ["ev-academia-b4", 0.185, 5.473, "29976673245526410256996542100117997012469862212166521111000000000003899610342006676001387765446556788985114400013778821430158888952353100"], "Ajuda-me a comer 4 maçãs! Toca em cada uma e conta comigo.": ["ev-academia-b4", 5.958, 5.556, "1986235446576410351014699976762100229998112346787322216653111100000000000479840134201797017995455577889644420023666520441014577666521321100"], "4 maçãs! Que delícia!": ["ev-academia-b4", 11.814, 2.304, "1899504579995223298763222211000000000174697678842222654200"], "4 crianças salvas!": ["ev-academia-b4", 14.418, 1.47, "1499802522455565322422258652133111000"], "Isso! É a Bruxa 4!": ["ev-academia-b4", 16.188, 1.738, "16862221343100000000298344223301699701144100"], "Boa! É a Bruxa 4!": ["ev-academia-b4", 18.225, 1.507, "27797766420006883488223401599510122100"], "Você derrotou a Bruxa 4!": ["ev-academia-b4", 20.033, 1.859, "04522845934640156667632456322330139984011442000"], "Derrotaste a Bruxa 4!": ["ev-academia-b4", 22.191, 1.589, "1487264059941116434442233015995201243100"], "Vamos comer 4 maçãs e derrotar a Bruxa 4! Conta comigo!": ["ev-academia-b4", 24.081, 5.142, "135767632116675430249940348874222377765111000000047437752353028982136322454221234200011799940134420000000158764141146998983243100"], "A Bruxa 4 foi derrotada... mas ela tem uma irmã mais velha!": ["ev-academia-b4", 29.522, 5.556, "0864335333222363001599982011521116764577311650018998634332200000000029997632588756510037777653006899655632699877678999877622224866553432200"], "A Bruxa 4 foi derrotada... mas tem uma irmã mais velha!": ["ev-academia-b4", 35.378, 5.032, "397325475221117510014999501451114543852551027898733543210000000001898521120026577776667997777349986546886442221228677655542100"], "Isso! São 4 maçãs!": ["ev-academia-b4", 40.71, 2.09, "26742221531000001222287643002599810115998631111111000"], "Boa! São 4 maçãs!": ["ev-academia-b4", 43.1, 1.696, "2669998864112237650199802467742215655211000"], "6 maçãs? A gente consegue!": ["ev-academia-b4", 45.096, 2.193, "0222686616896223487872220000003863992204972269894474100"], "São 6 maçãs? Nós conseguimos!": ["ev-academia-b4", 47.589, 2.71, "02267622288524995222754311110000000000899952204652234348987641111000"], "Me ajuda a comer 6 maçãs! Toca em cada uma e conta comigo.": ["ev-academia-b6", 0.185, 5.435, "2998674225556325431006402678774122256542157962212255431111100000000069970135774017997245568999854210000023100156764023001368987772122100"], "Ajuda-me a comer 6 maçãs! Toca em cada uma e conta comigo.": ["ev-academia-b6", 5.92, 5.874, "599842134445567552025689965541112216677522166424986311126663111100000000000000067884014467102999635768999975320000000450014777335014898766323332000"], "6 maçãs! Que delícia!": ["ev-academia-b6", 12.094, 2.202, "02239975278733334986222210000000014857965676222178542000"], "6 crianças salvas!": ["ev-academia-b6", 14.596, 1.519, "01149742124578863253222999732542111100"], "Isso! É a Bruxa 6!": ["ev-academia-b6", 16.415, 1.652, "276323652000001999435853226322698741211000"], "Boa! É a Bruxa 6!": ["ev-academia-b6", 18.367, 1.514, "27598998777677435641115211276663111000"], "Você derrotou a Bruxa 6!": ["ev-academia-b6", 20.181, 1.839, "0852583794681078897666952226422166665212221100"], "Derrotaste a Bruxa 6!": ["ev-academia-b6", 22.32, 1.56, "1558357109992116536732142225666311111000"], "Vamos comer 6 maçãs e derrotar a Bruxa 6! Conta comigo!": ["ev-academia-b6", 24.18, 5.405, "2427977521046776622224586317998421116788731110024458534410199993166323488653211144112223887642111111000000000198875055016899998424442000"], "A Bruxa 6 foi derrotada... mas ela tem uma irmã mais velha!": ["ev-academia-b6", 29.885, 5.405, "2994335765212562222786321126745642540015556743544320000000000059998788862211000000000014764710156779965758975569999879433297777654431000"], "A Bruxa 6 foi derrotada... mas tem uma irmã mais velha!": ["ev-academia-b6", 35.59, 5.113, "39833255776222216642001122289752221116784495425610279974244331000000000069972211037899876786555469997789998655323259776645432100"], "Isso! São 6 maçãs!": ["ev-academia-b6", 41.003, 2.044, "1796332166410000013337997222699269953337765222210000"], "Boa! São 6 maçãs!": ["ev-academia-b6", 43.347, 1.738, "16599976321224755422297425975122466521111000"], "8 maçãs? A gente consegue!": ["ev-academia-b6", 45.384, 2.016, "298403997222397763211100004736972116852267764484100"], "São 8 maçãs? Nós conseguimos!": ["ev-academia-b6", 47.7, 2.53, "0234799995116695222377652221000000599995211575224337876542111100"], "Pega 6 maçãs para mim! Põe na cesta e conta.": ["ev-academia-b6", 50.53, 3.918, "39963542224686247552222466522102856799996433210000000004765764223994220642000000530028887401531200"], "Apanha 6 maçãs para mim! Põe no cesto e conta.": ["ev-academia-b6", 54.749, 4.233, "7950075555422286424997322257752211100057469997679851000000000037666886222258773310221000350005877710243200"], "Isso! 6 maçãs na cesta!": ["ev-academia-b6", 59.282, 2.252, "179722246412228963168952222788329874222388741110343200000"], "Boa! 6 maçãs no cesto!": ["ev-academia-b6", 61.834, 1.931, "0668798863112299751689422795277422377742201331000"], "Me ajuda a comer 8 maçãs! Toca em cada uma e conta comigo.": ["ev-academia-b8", 0.185, 5.444, "26765542234553453062023789876676302898422226543112110000000000000599930145310000698029995573004888786304300126776025310001479878722211000"], "Ajuda-me a comer 8 maçãs! Toca em cada uma e conta comigo.": ["ev-academia-b8", 5.929, 5.67, "6975225661857761054002679998653400676301578632223665312221100000000029997101567888302899963565200367899865420000330013777504401258777731233200"], "8 maçãs! Que delícia!": ["ev-academia-b8", 11.899, 2.13, "699602688853325876422211000000001576796588822214543100"], "8 crianças salvas!": ["ev-academia-b8", 14.329, 1.467, "3985120336688842362225996313422211100"], "Isso! É a Bruxa 8!": ["ev-academia-b8", 16.096, 1.663, "168422225420001798437642221779998101122000"], "Boa! É a Bruxa 8!": ["ev-academia-b8", 18.059, 1.653, "266977764000799942787222351499960010100000"], "Você derrotou a Bruxa 8!": ["ev-academia-b8", 20.012, 1.735, "19336849737920199999536983222277889501133100"], "Derrotaste a Bruxa 8!": ["ev-academia-b8", 22.047, 1.485, "15453394099832125545842215777501232000"], "Vamos comer 8 maçãs e derrotar a Bruxa 8! Conta comigo!": ["ev-academia-b8", 23.832, 5.267, "136877521387875752146987222226765421110003554684254000799999621006753236444211123330000677663001000000157788404301579999872255310000"], "A Bruxa 8 foi derrotada... mas ela tem uma irmã mais velha!": ["ev-academia-b8", 29.399, 5.38, "598659564211165500466674003421111135454456323530029999953355543320000000035655546217787750016666667756669997889987675233286665544432100"], "A Bruxa 8 foi derrotada... mas tem uma irmã mais velha!": ["ev-academia-b8", 35.079, 4.97, "28742676521146400477682033111166662024686216610069997325543100000000005996411110000043233564334449999777887773122877755532100"], "Isso! São 8 maçãs!": ["ev-academia-b8", 40.349, 2.062, "2786332166320000012237789798711599952224766412211000"], "Boa! São 8 maçãs!": ["ev-academia-b8", 42.711, 1.748, "16479976421000122499889930368832227776111100"], "10 maçãs? A gente consegue!": ["ev-academia-b8", 44.759, 1.713, "1699468733219976321069479531199321678323200"], "São 10 maçãs? Nós conseguimos!": ["ev-academia-b8", 46.771, 2.503, "023767685258952225888422100000399997521047522532688765411221000"], "Cadê a Bruxa 8? Toca nela!": ["ev-academia-b8", 49.574, 1.851, "16756874566322166610220000007941589988975542100"], "Onde está a Bruxa 8? Toca nela!": ["ev-academia-b8", 51.725, 2.469, "28896221019964365532222566640132000000000057613579888764432000"], "Pega 8 maçãs para mim! Põe na cesta e conta.": ["ev-academia-b8", 54.495, 3.907, "19987348721576301598632222677421033778999987631000000355566752221778412025310000052026877711443100"], "Apanha 8 maçãs para mim! Põe no cesto e conta.": ["ev-academia-b8", 58.701, 4.036, "69300966765688611468985222257775211059678999986532100000000565565432222588861201204400117887600343100"], "Isso! 8 maçãs na cesta!": ["ev-academia-b8", 63.037, 2.185, "3874222375300000069961267896222477459852218984220143100"], "Boa! 8 maçãs no cesto!": ["ev-academia-b8", 65.522, 1.914, "276996730069820479872222656348622267641110132100"]}}, ["bruxa10-ev-academia", "bruxa2-ev-academia", "bruxa4-ev-academia", "bruxa6-ev-academia", "bruxa8-ev-academia", "capita-ev-academia", "capita-ev-academia-b10", "capita-ev-academia-b2", "capita-ev-academia-b4", "capita-ev-academia-b6", "capita-ev-academia-b8"]);
+</script>
+<script>
+/* Eventos: a tela inicial ficou pronta antes deles chegarem; põe o cartão agora. #evento-<id> na URL abre o evento. */
+(() => {
+  const h = decodeURIComponent(location.hash.slice(1));
+  if (h.startsWith("evento-") && Evento.achar(h.slice(7))) return Evento.abrir(h.slice(7));
+  if (modoAtual === "inicio") Evento.noInicio(palco.querySelector(":scope > .tela.inicio"));
 })();
 </script>
 <script>
